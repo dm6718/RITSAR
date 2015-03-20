@@ -7,4 +7,4 @@ Current capabilities include modeling the phase history for a collection of poin
 
 Over the coming months, I will update this readme with more detailed instructions as well as interfaces for AFRL Gotcha data and DIRSIG SAR simulated data.
 
-If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu.
+If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu.  Ideas on how to incorporate a GUI or package the code for a distutils distribution would be greatly appreciated.
