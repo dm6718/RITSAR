@@ -1,4 +1,4 @@
-# SARIT
+# RITSAR
 Synthetic Aperture Radar (SAR) Image Processing Toolbox for Python
 
 This is an initial version of a SAR image processing toolbox for Python.  The SciPy core libraries are required.  If using the omega-k algorithm, OpenCV is also required.  To get started, update the Python Dictionaries located in the parameters folder or leave the default values in place.  In main.py in the top level directory, comment out those algorithms you do not wish to use.
