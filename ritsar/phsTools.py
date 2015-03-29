@@ -5,11 +5,12 @@ from numpy.linalg import norm
 from . import signal as sig
 from . signal import RECT
 
-def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1], window = 1):
+def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1]):
 ##############################################################################
 #                                                                            #
-#  This file takes a list of target locations and amplitudes and outputs the #
-#  demodulated signal to './phase_history.npy'.                              #
+#  This file takes a list of target locations and amplitudes and saves the   #
+#  demodulated signal to './phase_history.npy'. It also outputs the signal   #
+#  to the function caller.                                                   #
 #                                                                            #
 ##############################################################################
     
@@ -37,10 +38,7 @@ def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1], window = 1):
             phase = pi*gamma*(2*dr/c)**2-\
                     2*pi*(f_0+gamma*t)*2*dr/c
             
-            if window:
-                phs[i,:] += amplitudes[j]*exp(1j*phase)*RECT((t-2*dr/c),T_p)
-            else:
-                phs[i,:] += amplitudes[j]*exp(1j*phase)
+            phs[i,:] += amplitudes[j]*exp(1j*phase)*RECT((t-2*dr/c),T_p)
             
             j+=1
     
@@ -50,7 +48,7 @@ def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1], window = 1):
 
 
 def RVP_correct(phs, platform):
-  ##############################################################################
+##############################################################################
 #                                                                            #
 #  Corrects Residual Video Phase using the formulation in Carrera Appendix C #
 #                                                                            #
