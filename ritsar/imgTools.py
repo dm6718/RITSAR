@@ -172,7 +172,7 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     
     img = np.abs(sig.ift2(phs_polar))
     
-    return(img, phs_polar)
+    return(img)
 
 
 def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):

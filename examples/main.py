@@ -16,7 +16,7 @@ path.append('./dictionaries')
 import numpy as np
 import matplotlib.pylab as plt
 #Include Dictionaries
-from SARplatform import plat_dict
+from SARplatformUHF import plat_dict
 from img_plane import img_plane_dict
 #from read_auxillary import aux_read
 
@@ -61,9 +61,9 @@ phs_corr = RVP_corr(phs, platform)
 phs_fixed= phs_const_ref(phs_corr, platform, upchirp = 1)
 
 #Apply algorithm of choice to phase history data
-#img_wk = wk(phs_fixed, platform, img_plane, taylor = 43, upsample = 2)
+img_wk = wk(phs_fixed, platform, img_plane, taylor = 43, upsample = 2)
 #img_bp = bp(phs_corr, platform, img_plane, taylor = 0, upsample = 2)
-[img_pf, phs_polar] = pf(phs_corr, platform, img_plane, taylor = 43)
+#img_pf = pf(phs_corr, platform, img_plane, taylor = 43)
 
 #Output image
-plt.imshow(np.abs(img_pf))
+plt.imshow(np.abs(img_wk))

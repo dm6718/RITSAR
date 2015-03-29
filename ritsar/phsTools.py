@@ -45,6 +45,8 @@ def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1], window = 1):
             j+=1
     
     np.save('./phase_history.npy', phs)
+    
+    return(phs)
 
 
 def RVP_correct(phs, platform):
