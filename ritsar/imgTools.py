@@ -239,7 +239,7 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
     return(img)
     
 
-def omega_k(phs, platform, img_plane, taylor = 43, upsample = 6):
+def omega_k(phs, platform, taylor = 43, upsample = 6):
 ##############################################################################
 #                                                                            #
 #  This is an omega-k algorithm based off of the algorithm prescribed in the #

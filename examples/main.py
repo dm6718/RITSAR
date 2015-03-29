@@ -62,7 +62,7 @@ phs_corr = RVP_corr(phs, platform)
 phs_fixed= phs_const_ref(phs_corr, platform, upchirp = 1)
 
 #Apply algorithm of choice to phase history data
-#img_wk = wk(phs_fixed, platform, img_plane, taylor = 43, upsample = 2)
+#img_wk = wk(phs_fixed, platform, taylor = 43, upsample = 2)
 #img_bp = bp(phs_corr, platform, img_plane, taylor = 0, upsample = 2)
 img_pf = pf(phs_corr, platform, img_plane, taylor = 43)
 
