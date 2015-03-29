@@ -253,7 +253,7 @@ def omega_k(phs, platform, img_plane, taylor = 43, upsample = 6):
 #                                                                            #
 #  The first step in the algorithm is to perform a 1D FT along azimuth.      #
 #  A matched filter is applied to the resultant data to perfectly compensate #
-#  The range curvature of all scatterers having minimum range R_s.  The      #
+#  the range curvature of all scatterers having minimum range R_s.  The      #
 #  default setting for R_s is the minimum range of scene center.  To         #
 #  correct the range curvature for other scatterers, the data is mapped      #
 #  onto a new grid.                                                          #

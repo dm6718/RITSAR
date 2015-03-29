@@ -60,31 +60,198 @@ This function is a \underline{basic} phase history simulator.  It takes a list o
 \newpage
 
 \subsection{RVP\_correct(phs, platform)}
-Corrects Residual Video Phase using the formulation in Carrera Appendix C.
+Corrects Residual Video Phase using the formulation in Carrera Appendix C.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history to be corrected for residual video phase
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+  \begin{itemize}
+    \item \defs{nsamples}{int}\\
+    	number of fast time samples
+    \item \defs{npulses}{int}\\
+    	number of pulses
+    \item \defs{chirprate}{float}\\
+    	chirprate in $Hz/s$
+	\item \defs{delta\_r}{float}\\
+	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+  \end{itemize}
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+	resultant phase history, corrected for residual video phase
+\end{itemize}
+
+\newpage
 
 \subsection{phs\_to\_const\_ref(phs, platform, upchirp)}
-This program converts a phase history that was demodulated using a pulse dependant range to scene center to a phase history that is demodulated using a fixed reference.  The fixed reference is defined as the minimum range to scene center.
+This program converts a phase history that was demodulated using a pulse dependant range to scene center to a phase history that is demodulated using a fixed reference.  The fixed reference is defined as the minimum range to scene center.\\
 
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history that was compensated to a point
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{chirprate}{float}\\
+	    	chirprate in $Hz/s$
+	    \item \defs{f\_0}{float}\\
+	    	carrier frequency in Hz
+	    \item \defs{t}{float array [nsamples]}\\
+	    	\underline{demodulated} fast-time \underline{centered at t=0}.  The array should go from $(-nsamples/2, nsamples/2)\times\Delta t$ where, $\Delta t = (\mbox{A/D sampling rate})^{-1}$
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	\end{itemize}
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+	resultant phase history, compensated to a line
+\end{itemize}
+
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{imgTools}
+In this section the img\_plane dictionary is introduced.  A sample img\_plane dictionary generator is provided in sarit/examples/dictionaries.
 
 \subsection{polar\_format(phs, platform, img\_plane, taylor)}
 This is the Polar Format algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs. 
 
-The phase history data is collected on a two-dimensional surface in k-space.  For each pulse, a strip of this surface is collected.  The first step in this program is to project each strip onto the (ku,kv) plane defined by the normal vector contained in the image plane dictionary.  This will result in data that is unevenly spaced in (ku,kv). This unevenly spaced data is interpolated onto an evenly spaced (ku,kv) grid defined in the image plane dictionary.  The interpolation is done along the radial direction first, then along the along-track direction.  Further details of this method are given in both the Jakowitz and Carrera texts.    
+The phase history data is collected on a two-dimensional surface in k-space.  For each pulse, a strip of this surface is collected.  The first step in this program is to project each strip onto the (ku,kv) plane defined by the normal vector contained in the image plane dictionary.  This will result in data that is unevenly spaced in (ku,kv). This unevenly spaced data is interpolated onto an evenly spaced (ku,kv) grid defined in the image plane dictionary.  The interpolation is done along the radial direction first, then along the along-track direction.  Further details of this method are given in both the Jakowitz and Carrera texts.\\
 
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{f\_0}{float}\\
+	    	carrier frequency in Hz
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	    \item\defs{k\_r}{float array [nsamples]}\\
+	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+	    \item\defs{R\_c}{float}\\
+	    	range to scene center at aperture center
+	\end{itemize}
+  	\item \defs{img\_plane}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{n\_hat}{float array [3]}\\
+	    	unit normal vector to image plane
+	    \item \defs{k\_u}{float array [size(u)]}\\
+	    	image plane spatial frequencies along u axis.  u is defined to lie along the slant range vector, projected onto the image plane.
+	    \item \defs{k\_v}{float array [size(v)]}\\
+	    	image plane spatial frequencies along v axis.  v is defined to lie perpendicular to the slant range vector in the image plane.
+	\end{itemize}
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize}
 
 \subsection{backprojection(phs, platform, img\_plane, taylor, \mbox{upsample})}
-This is the Backprojection algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs.  The (x,y,z) locations of each pixel are required, as well as the size of the final image (interpreted as [size(v) x size(u)]). 
+This is the Backprojection algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs.  The (x,y,z) locations of each pixel are required, as well as the size of the final image (interpreted as [size(v) x size(u)]).\\
 
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+    	\item \defs{nsamples}{int}\\
+    		number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+		\item\defs{k\_r}{float array [nsamples]}\\
+	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+    	\item \defs{delta\_r}{float}\\
+    	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	\end{itemize}
+  	\item \defs{img\_plane}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{u}{float array [len(u)]}\\
+	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
+	    \item \defs{v}{float array [len(v)]}\\
+	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
+	    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
+	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+	\end{itemize}
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+	\item\defs{upsample}{int}\\
+	upsampling factor, default is 6.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize}
 
 \subsection{omega-k(phs, platform, img\_plane, taylor, upsample)}
 This is an omega-k algorithm based off of the algorithm prescribed in the Carrera text.  Only the phase history and platform files are taken as inputs, an img\_plane dictionary is not required. 
 
 The input phase history needs to have been demodulated to a fixed reference.  If demodulated to scene center, the included phs\_const\_ref file can do the conversion for you.  A straight line flight path is also assumed.
 
-The first step in the algorithm is to perform a 1D FT along azimuth.  A matched filter is applied to the resultant data to perfectly compensate The range curvature of all scatterers having minimum range R\_s.  The default setting for R\_s is the minimum range of scene center.  To correct the range curvature for other scatterers, the data is mapped onto a new grid.  
+The first step in the algorithm is to perform a 1D FT along azimuth.  A matched filter is applied to the resultant data to perfectly compensate the range curvature of all scatterers having minimum range R\_s.  The default setting for R\_s is the minimum range of scene center.  To correct the range curvature for other scatterers, the data is mapped onto a new grid.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+    	\item \defs{nsamples}{int}\\
+    		number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	    \item\defs{k\_r}{float array [nsamples]}\\
+	    	spatial frequencies of demodulated signal corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+	    \item\defs{k\_y}{float}\\
+	    	spatial frequencies along flight path.  A straight line flight path (or phase history motion compensated to a straight line flight path) are required.
+	\end{itemize}
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+	\item\defs{upsample}{int}\\
+	upsampling factor, default is 6.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize} 
+
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{phsRead}
