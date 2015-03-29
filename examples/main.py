@@ -21,12 +21,12 @@ from img_plane import img_plane_dict
 #from read_auxillary import aux_read
 
 #Include SARIT toolset
-from sarit.phsTools import simulate_phs as sim_phs
-from sarit.phsTools import phs_to_const_ref as phs_const_ref
-from sarit.phsTools import RVP_correct as RVP_corr
-from sarit.imgTools import backprojection as bp
-from sarit.imgTools import polar_format as pf
-from sarit.imgTools import omega_k as wk
+from ritsar.phsTools import simulate_phs as sim_phs
+from ritsar.phsTools import phs_to_const_ref as phs_const_ref
+from ritsar.phsTools import RVP_correct as RVP_corr
+from ritsar.imgTools import backprojection as bp
+from ritsar.imgTools import polar_format as pf
+from ritsar.imgTools import omega_k as wk
 
 #Import auxillary data
 #fname = './*.aux'
