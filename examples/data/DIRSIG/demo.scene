@@ -1,0 +1,32 @@
+<classicscene name="Spotlight SAR demo scene">
+
+  <sceneorigin>
+    <geodeticlocation>
+      <latitude>43</latitude>
+      <longitude>-77</longitude>
+      <altitude>0</altitude>
+    </geodeticlocation>
+  </sceneorigin>
+
+  <odbdirectory>$SCENE_DIR/geometry</odbdirectory>
+  <gdbdirectory>$SCENE_DIR/geometry</gdbdirectory>
+
+  <geometrylist enabled="true">
+    <geometrylistinclude name="New ODB" enabled="true">demo.odb</geometrylistinclude>
+  </geometrylist>
+
+  <landmarks>
+  </landmarks>
+
+  <matfilename>$SCENE_DIR/materials/demo.mat</matfilename>
+  <emsdirectory>$SCENE_DIR/materials</emsdirectory>
+  <extdirectory>$SCENE_DIR/materials</extdirectory>
+  <absdirectory>$SCENE_DIR/materials</absdirectory>
+  <srcdirectory>$SCENE_DIR/materials</srcdirectory>
+
+  <mapdirectory>$SCENE_DIR/maps</mapdirectory>
+  <maplist/>
+
+  <metadata/>
+
+</classicscene>

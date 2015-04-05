@@ -1,12 +1,17 @@
 # RITSAR
 Synthetic Aperture Radar (SAR) Image Processing Toolbox for Python
 
-This is an initial version of a SAR image processing toolbox for Python. The SciPy core libraries are required. The package was developed using the Anaconda distribution which includes the SciPy core libraries.  Anaconda can be downloaded for free from https://store.continuum.io/cshop/anaconda/ . If using the omega-k algorithm, OpenCV is also required. Instructions for installing OpenCV for Python can be found at  https://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html#py-table-of-content-setup .  To get started, update the Python dictionaries located in the ./examples/dictionaries folder or leave the default values in place. In main.py in the ./examples directory, comment out those algorithms you do not wish to use.  More detailed instructions can be found in ./documentation.
+Before installation, please make sure you have the following:
+- SciPy. Comes with many Python distributions such as Enthought Canopy, Python(x,y), and Anaconda.  Development was done using the Anaconda distribution which can be downloaded for free from https://store.continuum.io/cshop/anaconda/. 
+- OpenCV. If using the omega-k algorithm, OpenCV is required. Instructions for installing OpenCV for Python can be found at  https://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html#py-table-of-content-setup.
+- Spectral.  Needed to interface with .envi files.  Can be downloaded here: http://www.spectralpython.net/ 
+  
+To get started, run the demos in ./examples in a python or IPython console or your IDE of choice.  For sim_demo, feel free to adjust the parameters located in ./examples/dictionaries.
 
-Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, backprojection, and omega-k algorithms.
+Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, backprojection, and omega-k algorithms.  The current version is also able to process AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.  Future capabilities will include motion compensation to a line and autofocusing.
 
-Over the coming months, I will update this readme with more detailed instructions as well as interfaces for AFRL Gotcha data and DIRSIG SAR simulated data.
+To install, first download and unzip the repository.  Then from the command line, go to the unzipped directory and type "python setup.py install".  To uninstall, simply remove the ritsar directory.  This can be done by "rm -rf /(Python Directory)/Libs/site-packages/ritsar" for an anaconda distribution of python.
 
-To install, first download and unzip the repository.  Then from the command line, go to the unzipped directory and type "python setup.py install".  To uninstall, simply remove the ritsar directory.  This can be done by "rm -rf (Python Directory)/Libs/site-packages/ritsar" for an anaconda distribution of python.
+Data included with this toolset includes AFRL Gotch data provided by AFRL/SNA.  This data can be downloaded separately from https://www.sdms.afrl.af.mil/index.php?collection=gotcha after user registration.  Also included is a single dataset from Sandia National Labs.
 
 If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu. Ideas on how to incorporate a GUI would be greatly appreciated.

@@ -1,5 +1,12 @@
 \documentclass{article}
 \usepackage{amsmath}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor=blue,
+    urlcolor=blue
+}
 
 \newcommand{\defs}[2]{\textbf{{#1}} : {#2}}
 
@@ -13,14 +20,15 @@
 \newpage
 
 \section{Introduction}
-Below is a description of each of the functions contained in the ritsar package.  For installation instructions, reference the README file.  
+Below is a description of each of the functions contained in the RITSAR package.  For installation instructions, reference the README file.  
 
-Each of the sections below represent a module contained within the ritsar package and each subsection details how to use each function.  The format for the title of each subsection is "function(parameters)."  This is followed by a short description of what the function does. Next, each parameter is defined.  Finally, a description of what the function returns is given.
+Each of the sections below represent a module contained within the RITSAR package and each subsection details how to use each function.  The format for the title of each subsection is "function(parameters)."  This is followed by a short description of what the function does. Next, each parameter is defined.  Finally, a description of what the function returns is given.
 
-As an example, lets say you wanted to simulate your own phase history.  The function required for this is simulate\_phs located in the phsTools module.  Before this function can be used, the required parameters need to be defined.  The descriptions of each required parameter can be found in subsection \ref{simulate_phs}.  The first parameter that needs to be defined is "platform", which is a Python dictionary. A description of each key that goes into platform is also given in subsection \ref{simulate_phs}.  Once platform is defined, the user then creates an array specifying the locations of each point reflector in the scene as well as the corresponding amplitudes.  After all this is done the user can then create their own phase history, stored in the phs variable, by typing the following into the Python console:\\[2ex]phs = ritsar.phsTools.simulate\_phs(platform, points, amplitudes)\\[2ex]  For a full end-to-end demonstration, "main.py" in the ./examples folder can be run.  The default setup processes an X-band collect using the polar format algorithm.  The final lines of main.py can be commented/un-commented to use the backprojection algorithm.  For a demonstration of the omega-k algorithm, OpenCV will be required.  You will most likely also want to use a UHF setup.  Under the "\#include dictionaries" block near the top of main.py, change SARplatform to SARplatformUHF and comment/un-comment the bottom lines of the file as necessary.  The platform dictionary keys defined in SARplatform and SARplatformUHF were taken from Carrera \cite{Carrera}.\newpage
+As an example, lets say you wanted to simulate your own phase history.  The function required for this is simulate\_phs located in the phsTools module.  Before this function can be used, the required parameters need to be defined.  The descriptions of each required parameter can be found in subsection \ref{simulate_phs}.  The first parameter that needs to be defined is "platform", which is a Python dictionary. A description of each key that goes into platform is also given in subsection \ref{simulate_phs}.  Once platform is defined, the user then creates an array specifying the locations of each point reflector in the scene as well as the corresponding amplitudes.  After all this is done the user can then create their own phase history, stored in the phs variable, by typing the following into the Python console:\\[2ex]phs = ritsar.phsTools.simulate\_phs(platform, points, amplitudes)\\[2ex]  For a full end-to-end demonstration, "main.py" in the ./examples folder can be run.  The default setup processes an X-band collect using the polar format algorithm.  The final lines of main.py can be commented/un-commented to use the backprojection algorithm.  For a demonstration of the omega-k algorithm, OpenCV will be required.  You will most likely also want to use a UHF setup.  To do this, simply change SARplatform to SARplatformUHF in the demo and comment/un-comment the bottom lines of the file as necessary.  The platform dictionary keys defined in SARplatform and SARplatformUHF were taken from Carrera \cite{Carrera}.\newpage
 
 
 \section{phsTools}
+
 
 \subsection{simulate\_phs(platform, points, amplitudes)}
 \label{simulate_phs}
@@ -119,6 +127,10 @@ This program converts a phase history that was demodulated using a pulse dependa
 	resultant phase history, compensated to a line
 \end{itemize}
 
+\subsection{moComp\_to\_line} Coming soon, ability to motion compensate phase history to a straight line flight path.  Platform dictionary automatically updated with new platform positions.
+
+\subsection{autoFocus}  Coming soon, autofocus of SAR images.
+
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,7 +159,7 @@ The phase history data is collected on a two-dimensional surface in k-space.  Fo
 	    \item\defs{k\_r}{float array [nsamples]}\\
 	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
 	    \item\defs{R\_c}{float}\\
-	    	range to scene center at aperture center
+	    	vector to scene center at aperture center
 	\end{itemize}
   	\item \defs{img\_plane}{dictionary}\\
   	dictionary that has the following keys defined:
@@ -253,16 +265,211 @@ The first step in the algorithm is to perform a 1D FT along azimuth.  A matched 
 
 \newpage
 
+\subsection{img\_plane\_dict(platform, res\_factor, n\_hat, aspect, upsample)}
+This function defines the image plane parameters.  The user specifies the image resolution using the res\_factor.  A res\_factor of 1 yields a (u,v) image plane whose pixels are sized at the theoretical resolution limit of the system (derived using delta\_r which in turn was derived using the bandwidth.  The user can also adjust the aspect of the image grid.  This defaults to nsamples/npulses.
+
+'n\_hat' is a user specified value that defines the image plane orientation w.r.t. to the nominal ground plane. .\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+    	\item \defs{nsamples}{int}\\
+    		number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{R\_c}{float array [3]}\\
+	       	vector to scene center at aperture center
+	    \item\defs{delta\_r}{float array [nsamples]}\\
+	    	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	\end{itemize}
+	\item\defs{res\_factor}{float}\\
+	image resolution in units of theoretical resolution size.  This defaults to 1.0.
+	\item\defs{n\_hat}{float array [3]}\\
+	unit normal vector to image plane.  Defaults to (0,0,1).
+	\item\defs{aspect}{float}\\
+	aspect ratio of range to cross range.  Determines cross-range resolution by multiplying res\_factor by aspect.  Defaults to nsamples/npulses
+	\item\defs{upsamples}{bool}\\
+	Option to upsample number of pixels.  The number of pixels in the range direction is set to a power of 2 that is one power of 2 higher than nsamples.  If nsamples is already a power of 2, the number of range pixels is just set to nsamples.  The same goes for npulses and number of cross-range pixels. 
+	
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	  	\item \defs{img\_plane}{dictionary}\\
+	  	dictionary that has the following keys defined:
+		\begin{itemize}
+			\item\defs{n\_hat}{float array [3]}\\
+				unit normal vector to image plane.  Defaults to (0,0,1).
+			\item \defs{u}{float array [len(u)]}\\
+		    	pixel locations in range direction.  u is defined to lie along the slant range vector, projected onto the image plane.
+			\item \defs{v}{float array [len(v)]}\\
+		    	pixel locations in cross-range direction.  v is defined to lie perpendicular to the slant range vector in the image plane.
+			\item \defs{du}{float array [len(u)]}\\
+		    	pixel spacing in range direction
+			\item \defs{dv}{float array [len(v)]}\\
+		    	pixel spacing in cross-range direction
+		    \item \defs{k\_u}{float array [size(u)]}\\
+		    	image plane spatial frequencies along u axis.  u is defined to lie along the slant range vector, projected onto the image plane.
+		    \item \defs{k\_v}{float array [size(v)]}\\
+		    	image plane spatial frequencies along v axis.  v is defined to lie perpendicular to the slant range vector in the image plane.
+		    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
+		    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+		\end{itemize}
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{phsRead}
-Coming soon
+This section describes the RITSAR interfaces to various datasets.  In a nutshell, the user supplies the directory containing the phase history and auxillary data.  The functions below essentially perform 3 tasks:
+\begin{enumerate}
+\item read in the phase history and export as a NumPy array
+\item read in the auxillary data
+\item place auxillary data in a platform dictionary and export
+\end{enumerate}
+As shown in the functions below, code can be written to handle many different data formats including .envi, .mat, .xml, and binary.  As of now, RITSAR can interface with DIRSIG and AFRL Gotcha data.  A function is also provided that processes a Sandia data set.  These functions serve mostly to show that data in almost any format can be processed with the RITSAR toolset provided code is written that performs the three tasks listed above for a given format.
 
 
-\subsection{DIRSIG}
+\subsection{DIRSIG(directory)}
+This function reads in the DIRSIG xml data as well as the envi header file from the user supplied directory. The phs and a Python dictionary compatible with RITSAR are returned to the function caller.  More information on DIRSIG's SAR capability can be found here: \url{http://www.dirsig.org/docs/new/radar.html}\\
 
-\subsection{AFRL}
+\noindent \underline{\textbf{Parameters}}:
+\begin{itemize}
+  	\item \defs{directory}{string}\\
+  		string containing directory of DIRSIG data to include the xml and envi header files.
+\end{itemize}
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+		the complex phase history
+	  \item \defs{platform}{dictionary}\\
+	  	dictionary that has the following keys defined:
+	  \begin{itemize}
+	    \item \defs{f\_0}{float}\\
+	    	carrier frequency in Hz
+		\item \defs{chirprate}{float}\\
+		   	chirprate in $Hz/s$
+	    \item \defs{nsamples}{int}\\
+	    	number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{B}{float}\\
+	    	bandwidth of transmitted signal
+	    \item \defs{B\_IF}{float}\\
+	    	bandwidth of intermediate frequency, demodulated signal.
+	    \item \defs{delta\_r}{float}\\
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+    	\item \defs{delta\_t}{float}\\
+    		time between fast time samples.  Defined as $(\mbox{A/D sampling rate})^{-1}$
+    	\item \defs{vp}{float}\\
+	   		velocity of platform in m/s
+	   	\item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	    \item \defs{R\_c}{float array [3]}\\
+	     	vector to scene center at aperture center
+	    \item \defs{t}{float array [nsamples]}\\
+   	    	\underline{demodulated} fast-time \underline{centered at t=0}.  The array should go from $(-nsamples/2, nsamples/2)\times\Delta t$ where, $\Delta t = (\mbox{A/D sampling rate})^{-1}$
+   	    \item\defs{k\_r}{float array [nsamples]}\\
+   	    	spatial frequencies of demodulated signal corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+		\item\defs{k\_y}{float}\\
+   	    	spatial frequencies along flight path.  A straight line flight path (or phase history motion compensated to a straight line flight path) are required.
+   	    \item\defs{metadata}{string array}\\
+   	    	xml metadata
+	  \end{itemize}
+\end{itemize}
 
-\subsection{Sandia}
+
+\subsection{AFRL(directory, pol, start\_az, n\_az=3)}
+This function reads in the AFRL Gotcha *.mat files from the user supplied directory and exports both the phs and a Python dictionary compatible with RITSAR.
+
+\noindent \underline{\textbf{Parameters}}:
+\begin{itemize}
+  	\item \defs{directory}{string}\\
+  		string containing directory of DIRSIG data to include the xml and envi header files.
+  	\item \defs{pol}{string}\\
+  		polarization to be processed.  For example, 'HH'.
+  	\item \defs{start\_az}{int}\\
+  		starting azimuth (0 to 360)
+  	\item \defs{n\_az}{int}\\
+   		number of azimuth files to process.  Default is 3.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+		the complex phase history
+	  \item \defs{platform}{dictionary}\\
+	  	dictionary that has the following keys defined:
+	  \begin{itemize}
+	    \item \defs{f\_0}{float}\\
+	    	carrier frequency in Hz
+		\item \defs{chirprate}{float}\\
+		   	chirprate in $Hz/s$
+	    \item \defs{nsamples}{int}\\
+	    	number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{B\_IF}{float}\\
+	    	bandwidth of intermediate frequency, demodulated signal.
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	    \item \defs{delta\_r}{float}\\
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	    \item \defs{R\_c}{float array [3]}\\
+	     	vector to scene center at aperture center
+	    \item \defs{t}{float array [nsamples]}\\
+   	    	\underline{demodulated} fast-time \underline{centered at t=0}.  The array should go from $(-nsamples/2, nsamples/2)\times\Delta t$ where, $\Delta t = (\mbox{A/D sampling rate})^{-1}$
+   	    \item\defs{af\_r}{float array [npulses]}\\
+   	    	column vector containing the correction for R\_c
+	    \item\defs{af\_ph}{float array [npulses]}\\
+  	    	column vector containing the phase correction
+   	    \item\defs{k\_r}{float array [nsamples]}\\
+   	    	spatial frequencies of demodulated signal corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+		\item\defs{(k\_y)}{float}\\
+   	    	not currently available (due to circular flight path).  may be added later when moComp\_to\_line is complete.
+	  \end{itemize}
+\end{itemize}
+
+\subsection{Sandia(directory)}
+This function reads in the Sandia *.phs and *.au2 files from the user supplied directoryand exports both the phs and a Python dictionary compatible with RITSAR.
+
+\noindent \underline{\textbf{Parameters}}:
+\begin{itemize}
+  	\item \defs{directory}{string}\\
+  		string containing directory of DIRSIG data to include the
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+		the complex phase history
+	  \item \defs{platform}{dictionary}\\
+	  	dictionary that has the following keys defined:
+	  \begin{itemize}
+	    \item \defs{f\_0}{float}\\
+	    	carrier frequency in Hz
+		\item \defs{chirprate}{float}\\
+		   	chirprate in $Hz/s$
+	    \item \defs{nsamples}{int}\\
+	    	number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{B\_IF}{float}\\
+	    	bandwidth of intermediate frequency, demodulated signal.
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	    \item \defs{delta\_r}{float}\\
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	    \item \defs{R\_c}{float array [3]}\\
+	     	vector to scene center at aperture center
+	    \item \defs{t}{float array [nsamples]}\\
+   	    	\underline{demodulated} fast-time \underline{centered at t=0}.  The array should go from $(-nsamples/2, nsamples/2)\times\Delta t$ where, $\Delta t = (\mbox{A/D sampling rate})^{-1}$
+   	    \item\defs{k\_r}{float array [nsamples]}\\
+   	    	spatial frequencies of demodulated signal corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$ added later when moComp\_to\_line is complete.
+	  \end{itemize}
+\end{itemize}
 
 \bibliography{references}
 \bibliographystyle{ieeetr}

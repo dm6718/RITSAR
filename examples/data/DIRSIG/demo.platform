@@ -1,0 +1,78 @@
+<platform>
+  <metadata>
+    <entry>
+      <name>Author(s)</name>
+      <value><![CDATA[MG]]></value>
+    </entry>
+    <entry>
+      <name>Description</name>
+      <value><![CDATA[This is an initial demo of an side looking Spotlight SAR system.]]></value>
+    </entry>
+    <entry>
+      <name>Name</name>
+      <value><![CDATA[Demo SAR System]]></value>
+    </entry>
+  </metadata>
+  <clocktable>
+    <entry>
+      <clockrate>400</clockrate>
+      <altitude>15000</altitude>
+      <speed>200</speed>
+    </entry>
+  </clocktable>
+  <attachment>
+    <affinetransform/>
+    <mount type="static" name="Fixed Mount" >
+      <data rotationorder="xyz" angularunits="degrees" >
+        <xrotation>0</xrotation>
+        <yrotation>0</yrotation>
+        <zrotation>0</zrotation>
+      </data>
+      <attachment>
+        <affinetransform/>
+        <instrument type="radar" name="RADAR Instrument" >
+          <clock type="dependent" temporalunits="hertz">
+            <divider>1</divider>
+            <offset>0</offset>
+          </clock>
+          <transmitter type="pointlaser">
+            <spectral shape="gaussian" spectralunits="ghz">
+              <center>15</center>
+              <width>0.0003</width>
+            </spectral>
+            <spatial shape="rectangular" angularunits="radians">
+              <xdivergenceangle>0.01</xdivergenceangle>
+              <ydivergenceangle>0.01</ydivergenceangle>
+            </spatial>
+            <temporal shape="rect" temporalunits="seconds" powerunits="watts">
+              <pulseduration type="constant">1e-005</pulseduration>
+              <pulsepower type="constant">1e9</pulsepower>
+            </temporal>
+            <modulation type="linearfreq">
+              <chirprate>5.01287e13</chirprate>
+            </modulation>
+          </transmitter>
+          <receiver>
+            <signalgate temporalunits="seconds">
+              <min>1.335e-04</min>
+              <max>1.495e-04</max>
+              <delta>2.0e-08</delta>
+            </signalgate>
+            <stripcarrier>0</stripcarrier>
+            <imagefilename>demo.img</imagefilename>
+	  </receiver>
+	  <options>
+            <samples>5000</samples>
+            <maxbounces>3</maxbounces>
+            <enabledebugoutput>0</enabledebugoutput>
+            <enableverboseoutput>1</enableverboseoutput>
+            <repeatableseed>0</repeatableseed>
+            <nodemapfile>hit_nodes.dat</nodemapfile>
+            <nodemergeradius>0.8</nodemergeradius>
+	  </options>
+        </instrument>
+      </attachment>
+    </mount>
+  </attachment>
+</platform>
+

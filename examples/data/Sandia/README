@@ -1,0 +1,28 @@
+
+This document describes the raw SAR data set. The raw data set
+consists of two main files.
+
+rvr.phs -- is the raw complex data. Each sample is a complex number (4 bytes,
+two real integer bytes followed by two integer imaginary bytes). The data set 
+has 1999 pulses and 1800 samples/pulse. Thus the file is 1999*1800*4 bytes long.
+The file contains the data from pulse1, followed by pulse2 ... etc..
+
+rvr.au2 -- is the auxillary info file containing the number of pulses, number of
+samples/pulse, pointing vector for each pulse etc. The documentation for this 
+file is a word document 'au2_filedefinition.doc'. The information in the file can be easily
+read using the included matlab code 'get_au2.m'. The code returns a structure
+with all the important parameters. ie file_info = get_au2('rvr.au2');
+
+There is also a jpg file showing what the formed image should look like when it
+is processed correctly.
+
+Although the *.au2 can accommodate a variety of collections (bistatic, 
+varying center frequencies... etc) this collection is quite basic.. Meaning
+the center frequency is constant on each pulse and there are no additional
+phase corrections needed on pulse-by-pulse basis...
+
+If you have any questions please contact
+Dan Wahl
+505-844-2728
+
+

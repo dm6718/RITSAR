@@ -1,0 +1,7 @@
+<simulation>
+  <scene externalfile="./demo.scene" />
+  <atmosphericconditions externalfile="./simple.atm" />
+  <platform externalfile="./demo.platform" />
+  <platformmotion externalfile="./spotlight_200mps.ppd" />
+  <tasklist externalfile="./demo.tasks" />
+</simulation>

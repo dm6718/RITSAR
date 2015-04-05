@@ -92,7 +92,7 @@ def polar_format(phs, platform, img_plane, taylor = 43):
 #  texts.                                                                    #
 #                                                                            #
 ##############################################################################
-    
+        
     #Retrieve relevent parameters
     c           =   3.0e8
     npulses     =   platform['npulses']
@@ -137,8 +137,9 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     ku = r_hat*u_hat.T*k_matrix; ku = np.asarray(ku)
     kv = r_hat*v_hat.T*k_matrix; kv = np.asarray(kv)
     
-    #Create taylor window
-    win = sig.taylor(nu, S_L = taylor)
+    #Create taylor windows
+    win1 = sig.taylor(int(phs.shape[1]), S_L = taylor)
+    win2 = sig.taylor(int(phs.shape[0]), S_L = taylor)
     
     #Radially interpolate kx and ky data from polar raster
     #onto evenly spaced kx_i and ky_i grid for each pulse
@@ -148,32 +149,28 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     for i in xrange(npulses):
         print('range interpolating for pulse %i'%(i+1))
         real_rad_interp[i,:] = np.interp(k_ui, ku[i,:], 
-            phs.real[i,:]*win, left = 0, right = 0)
+            phs.real[i,:]*win1, left = 0, right = 0)
         imag_rad_interp[i,:] = np.interp(k_ui, ku[i,:], 
-            phs.imag[i,:]*win, left = 0, right = 0)
-        ky_new[i,:] = np.interp(k_ui, ku[i,:], kv[i,:], left = 0, right = 0)
-    
-    #Create taylor window
-    win = sig.taylor(nv, S_L = taylor)    
+            phs.imag[i,:]*win1, left = 0, right = 0)
+        ky_new[i,:] = np.interp(k_ui, ku[i,:], kv[i,:], left = 0, right = 0)  
     
     #Interpolate in along track direction to obtain polar formatted data
     real_polar = np.zeros([nv,nu])
     imag_polar = np.zeros([nv,nu])
-    for i in xrange(nv):
+    for i in xrange(nu):
         print('cross-range interpolating for sample %i'%(i+1))
         real_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
-            real_rad_interp[::-1,i]*win, left = 0, right = 0)
+            real_rad_interp[::-1,i]*win2, left = 0, right = 0)
         imag_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
-            imag_rad_interp[::-1,i]*win, left = 0, right = 0)    
+            imag_rad_interp[::-1,i]*win2, left = 0, right = 0)    
     
     real_polar = np.nan_to_num(real_polar)
     imag_polar = np.nan_to_num(imag_polar)    
     phs_polar = np.nan_to_num(real_polar+1j*imag_polar)
     
-    img = np.abs(sig.ift2(phs_polar))
+    img = np.abs(sig.ft2(phs_polar))
     
     return(img)
-
 
 def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
 ##############################################################################
@@ -214,10 +211,18 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
     filt = np.abs(k_r)
     phs_filt = phs*filt*win
     
-    #Upsample phase history
+    #Zero pad phase history
     N_fft = 2**(int(np.log2(nsamples*upsample))+1)
     pad = N_fft-nsamples
     phs_pad = np.pad(phs_filt, ((0,0),(pad/2,pad/2)), mode = 'constant')
+    
+    if pad:
+        pad_off = np.mod(phs.shape[1],2)
+    else:
+        pad_off = 0
+    
+    phs_pad = np.pad(phs_filt, ((0,0),(pad/2, pad/2+pad_off)),
+                   mode = 'constant')
     
     #Filter phase history and perform FT w.r.t t
     Q = sig.ft(phs_pad)    
@@ -236,7 +241,7 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
         img += Q_hat*np.exp(1j*k_c*dr_i)
         
     img = np.reshape(img, [nv, nu])
-    return(img)
+    return(img[:,::-1])
     
 
 def omega_k(phs, platform, taylor = 43, upsample = 6):
@@ -268,7 +273,7 @@ def omega_k(phs, platform, taylor = 43, upsample = 6):
     npulses =   platform['npulses']
     
     #Take azimuth FFT
-    S_Kx_Kr = sig.ft(phs, ax = 0)
+    S_Kx_Kr = sig.ift(phs, ax = 0)
     
     #Create K_r, K_y grid
     [K_r, K_y] = np.meshgrid(K_r, K_y)
@@ -319,3 +324,75 @@ def omega_k(phs, platform, taylor = 43, upsample = 6):
     img = sig.ift2(S_pad)
     
     return(img)
+    
+def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect = 0, upsample = True):
+##############################################################################
+#                                                                            #
+#  This function defines the image plane parameters.  The user specifies the #
+#  image resolution using the res_factor.  A res_factor of 1 yields a (u,v)  #
+#  image plane whose pixels are sized at the theoretical resolution limit    #
+#  of the system (derived using delta_r which in turn was derived using the  #
+#  bandwidth.  The user can also adjust the aspect of the image grid.  This  #
+#  defaults to nsamples/npulses.                                             #
+#                                                                            #
+#  'n_hat' is a user specified value that defines the image plane            #
+#  orientation w.r.t. to the nominal ground plane.                           #
+#                                                                            #
+##############################################################################
+    
+    nsamples = platform['nsamples']
+    npulses = platform['npulses']   
+    if not(aspect):
+        aspect = 1.0*nsamples/npulses
+    
+    #Import relevant platform parameters
+    R_c = platform['R_c']    
+    
+    #Define resolution.  This should be less than the system resolution limits
+    du = res_factor*platform['delta_r']
+    dv = aspect*du
+    
+    #Define image plane parameters
+    if upsample:
+        nu= 2**int(np.log2(nsamples)+bool(np.mod(np.log2(nsamples),1)))
+        nv= 2**int(np.log2(npulses)+bool(np.mod(np.log2(npulses),1)))
+    else:
+        nu= nsamples
+        nv= npulses
+        
+    u = np.linspace(-nsamples/2, nsamples/2, nu)*du
+    v = np.linspace(-npulses/2, npulses/2, nv)*dv
+    
+    #Derive image plane spatial frequencies
+    k_u = 2*pi*np.linspace(-1.0/(2*du), 1.0/(2*du), nu)
+    k_v = 2*pi*np.linspace(-1.0/(2*dv), 1.0/(2*dv), nv)
+    
+    #Derive representation of u_hat and v_hat in (x,y,z) space
+    v_hat = np.cross(n_hat, R_c)/norm(np.cross(n_hat, R_c))
+    u_hat = np.cross(v_hat, n_hat)/norm(np.cross(v_hat, n_hat))
+    
+    #Represent u and v in (x,y,z)
+    [uu,vv] = np.meshgrid(u,v)
+    uu = uu.flatten(); vv = vv.flatten()
+    
+    A = np.asmatrix(np.hstack((
+        np.array([u_hat]).T, np.array([v_hat]).T 
+            )))            
+    b = np.asmatrix(np.vstack((uu,vv)))
+    pixel_locs = np.asarray(A*b)
+    
+    #Construct dictionary and return to caller
+    img_plane =\
+    {
+    'n_hat'     :   n_hat,
+    'du'        :   du,
+    'dv'        :   dv,
+    'u'         :   u,
+    'v'         :   v,
+    'k_u'       :   k_u,
+    'k_v'       :   k_v,
+    'pixel_locs':   pixel_locs # 3 x N_pixel array specifying x,y,z location
+                               # of each pixel
+    }
+    
+    return(img_plane)

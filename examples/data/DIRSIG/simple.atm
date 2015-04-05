@@ -1,0 +1,24 @@
+<atmosphericconditions>
+  <metadata/>
+  <uniformweather>
+    <classicdata>
+      <filename>$DIRSIG_HOME/lib/data/weather/mls.wth</filename>
+    </classicdata>
+  </uniformweather>
+  <turbulence model="kolmogorov" enabled="1">
+    <cn2 model="hv57">
+      <windspeed>10</windspeed>
+      <ground>1.7e-14</ground>
+    </cn2>
+  </turbulence>
+  <ephemeris>
+    <fixed>
+      <solarazimuth>1.5708</solarazimuth>
+      <solarzenith>0.785398</solarzenith>
+    </fixed>
+  </ephemeris>
+  <uniformradiativetransfer>
+    <hemisphereirradiance>0.0</hemisphereirradiance>
+    <skyfraction>0</skyfraction>
+  </uniformradiativetransfer>
+</atmosphericconditions>

@@ -1,0 +1,23 @@
+<tasklist>
+  <reference>
+    <datetime type="absolute">2011-08-31T12:00:00.0000+00:00</datetime>
+  </reference>
+  <task>
+    <metadata>
+      <entry>
+        <name>Description</name>
+        <value><![CDATA[small aperture window]]></value>
+      </entry>
+      <entry>
+        <name>Name</name>
+        <value><![CDATA[Spotlight SAR]]></value>
+      </entry>
+    </metadata>
+    <start>
+      <datetime type="relative">0</datetime>
+    </start>
+    <stop>
+      <datetime type="relative">1.5</datetime>
+    </stop>
+  </task>
+</tasklist>
