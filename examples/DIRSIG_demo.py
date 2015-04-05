@@ -34,11 +34,12 @@ phs_corr = phsTools.RVP_correct(phs, platform)
 phs_fixed = phsTools.phs_to_const_ref(phs_corr, platform, upchirp = 1)
 
 #Import image plane dictionary from './parameters/img_plane'
-img_plane = imgTools.img_plane_dict(platform, res_factor = 1.0, aspect = 2.0)
+img_plane = imgTools.img_plane_dict(platform, res_factor = 0.5, aspect = 2.0)
 
 #Apply polar format algorithm to phase history data
 img_wk = imgTools.omega_k(phs_fixed, platform, taylor = 43, upsample = 2)
 #img_bp = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 43, upsample = 6)
+#img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
 
 #Output image
 plt.imshow(np.abs(img_wk), cmap = cmap)

@@ -152,17 +152,26 @@ def polar_format(phs, platform, img_plane, taylor = 43):
             phs.real[i,:]*win1, left = 0, right = 0)
         imag_rad_interp[i,:] = np.interp(k_ui, ku[i,:], 
             phs.imag[i,:]*win1, left = 0, right = 0)
-        ky_new[i,:] = np.interp(k_ui, ku[i,:], kv[i,:], left = 0, right = 0)  
+        ky_new[i,:] = np.interp(k_ui, ku[i,:], kv[i,:])  
     
     #Interpolate in along track direction to obtain polar formatted data
     real_polar = np.zeros([nv,nu])
     imag_polar = np.zeros([nv,nu])
-    for i in xrange(nu):
-        print('cross-range interpolating for sample %i'%(i+1))
-        real_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
-            real_rad_interp[::-1,i]*win2, left = 0, right = 0)
-        imag_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
-            imag_rad_interp[::-1,i]*win2, left = 0, right = 0)    
+    isSort = (ky_new[npulses/2, nu/2] < ky_new[npulses/2+1, nu/2])
+    if isSort:
+        for i in xrange(nu):
+            print('cross-range interpolating for sample %i'%(i+1))
+            real_polar[:,i] = np.interp(k_vi, ky_new[:,i], 
+                real_rad_interp[:,i]*win2, left = 0, right = 0)
+            imag_polar[:,i] = np.interp(k_vi, ky_new[:,i], 
+                imag_rad_interp[:,i]*win2, left = 0, right = 0)
+    else:
+        for i in xrange(nu):
+            print('cross-range interpolating for sample %i'%(i+1))
+            real_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
+                real_rad_interp[::-1,i]*win2, left = 0, right = 0)
+            imag_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
+                imag_rad_interp[::-1,i]*win2, left = 0, right = 0)
     
     real_polar = np.nan_to_num(real_polar)
     imag_polar = np.nan_to_num(imag_polar)    
