@@ -99,7 +99,7 @@ def AFRL(directory, pol, start_az, n_az=3):
         }
         platform.append(platform_tmp)
     
-    #Transform data
+    #Stack data from different azimuth files
     phs = np.vstack(phs)
     npulses = int(phs.shape[0])
     
