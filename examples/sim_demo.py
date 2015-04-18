@@ -22,10 +22,6 @@ from SARplatform import plat_dict
 from ritsar import phsTools
 from ritsar import imgTools
 
-#Import auxillary data
-#fname = './*.aux'
-#aux = aux_read(fname)
-
 #Create platform dictionary
 platform = plat_dict()
 

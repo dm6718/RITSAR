@@ -31,8 +31,7 @@ start_az = 1
 [phs, platform] = phsRead.AFRL(directory, pol, start_az)
 
 #Correct for reisdual video phase
-phs_corr = phsTools.RVP_correct(phs, platform)#*\
-        #np.exp(1j*platform['af_ph']/(4*np.pi))
+phs_corr = phsTools.RVP_correct(phs, platform)
 
 #Create image plane dictionary
 img_plane = imgTools.img_plane_dict(platform, res_factor = 1.5, upsample = False)
