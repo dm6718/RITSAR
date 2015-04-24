@@ -127,10 +127,6 @@ This program converts a phase history that was demodulated using a pulse dependa
 	resultant phase history, compensated to a line
 \end{itemize}
 
-\subsection{moComp\_to\_line} Coming soon, ability to motion compensate phase history to a straight line flight path.  Platform dictionary automatically updated with new platform positions.
-
-\subsection{autoFocus}  Coming soon, autofocus of SAR images.
-
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -268,7 +264,7 @@ The first step in the algorithm is to perform a 1D FT along azimuth.  A matched 
 \subsection{img\_plane\_dict(platform, res\_factor, n\_hat, aspect, upsample)}
 This function defines the image plane parameters.  The user specifies the image resolution using the res\_factor.  A res\_factor of 1 yields a (u,v) image plane whose pixels are sized at the theoretical resolution limit of the system (derived using delta\_r which in turn was derived using the bandwidth.  The user can also adjust the aspect of the image grid.  This defaults to nsamples/npulses.
 
-'n\_hat' is a user specified value that defines the image plane orientation w.r.t. to the nominal ground plane. .\\
+'n\_hat' is a user specified value that defines the image plane orientation w.r.t. to the nominal ground plane.\\
 
 \noindent \underline{\textbf{Parameters}}:
 
@@ -318,6 +314,27 @@ This function defines the image plane parameters.  The user specifies the image 
 		    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
 		    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
 		\end{itemize}
+\end{itemize}
+
+\subsection{autoFocus(img, win, win\_params)}
+This program autofocuses an image using the Phase Gradient Algorithm.  If the parameter win is set to auto, an adaptive window is used.  Otherwise, the user sets win to 0 and defines win\_params.  The first element of win\_params is the starting windows size.  The second element is the factor by which to reduce it by for each iteration.  This algorithm is based off \cite{303752}.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+  		complex image
+  	\item \defs{win}{string}\\
+  		if 'auto', an adaptive window is used.  Otherwise, win\_params is used to create the window.  Default is 'auto.'
+  	\item \defs{win\_params}{list}\\
+  	  		The first element of win\_params is the starting windows size.  The second element is the factor by which to reduce it by for each iteration.
+  	
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img\_af}{complex array [npulses x nsamples]}\\
+	autofocused image
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -471,6 +488,7 @@ This function reads in the Sandia *.phs and *.au2 files from the user supplied d
 	  \end{itemize}
 \end{itemize}
 
+\nocite*{}
 \bibliography{references}
 \bibliographystyle{ieeetr}
 \end{document}

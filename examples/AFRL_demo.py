@@ -34,11 +34,22 @@ start_az = 1
 phs_corr = phsTools.RVP_correct(phs, platform)
 
 #Create image plane dictionary
-img_plane = imgTools.img_plane_dict(platform, res_factor = 1.5, upsample = False)
+img_plane = imgTools.img_plane_dict(platform, res_factor = 1.2, upsample = True)
 
 #Apply algorithm of choice to phase history data
 img_bp = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 43, upsample = 6)
 img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
 
 #Output image
-plt.imshow(np.abs(img_bp)**(0.5), cmap = cmap)
+plt.imshow(np.abs(img_bp)**0.5, cmap = cm.Greys_r)
+plt.title('Backprojection')
+
+#Autofocus image
+print('autofocusing')
+#img_af, af_ph = imgTools.autoFocus(img_bp, win = 0, win_params = [300,0.8])
+img_af, af_ph = imgTools.autoFocus(img_pf, win = 0, win_params = [300,0.8])
+
+#Output autofocused image
+plt.figure()
+plt.imshow(np.abs(img_af)**0.5, cmap = cm.Greys_r)
+plt.title('Autofocused Polar Format')
