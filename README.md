@@ -8,7 +8,7 @@ Before installation, please make sure you have the following:
   
 To get started, run the demos in ./examples in a python or IPython console or your IDE of choice.  For sim_demo, feel free to adjust the parameters located in ./examples/dictionaries.
 
-Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, backprojection, and omega-k algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current can process AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
+Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, backprojection, and omega-k algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
 
 To install, first download and unzip the repository.  Then from the command line, go to the unzipped directory and type "python setup.py install".  To uninstall, simply remove the ritsar directory.  This can be done by "rm -rf /(Python Directory)/Libs/site-packages/ritsar" for an anaconda distribution of python.
 
