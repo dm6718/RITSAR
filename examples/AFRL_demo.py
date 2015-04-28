@@ -24,7 +24,7 @@ from ritsar import imgTools
 #Define top level directory containing *.mat file
 #and choose polarization and starting azimuth
 pol = 'HH'
-directory = './data/AFRL/pass1/'+pol+'/'
+directory = './data/AFRL/pass1'
 start_az = 1
 
 #Import phase history and create platform dictionary

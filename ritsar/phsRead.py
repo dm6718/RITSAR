@@ -19,7 +19,7 @@ def AFRL(directory, pol, start_az, n_az=3):
 ##############################################################################
     
     #Get filenames
-    prefix = 'data_3dsar_pass1_az'
+    prefix = '/'+pol+'/data_3dsar_pass1_az'
     az_str = []
     fnames = []
     az = np.arange(start_az, start_az+n_az)

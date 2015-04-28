@@ -399,12 +399,12 @@ This function reads in the DIRSIG xml data as well as the envi header file from 
 
 
 \subsection{AFRL(directory, pol, start\_az, n\_az=3)}
-This function reads in the AFRL Gotcha *.mat files from the user supplied directory and exports both the phs and a Python dictionary compatible with RITSAR.
+This function reads in the AFRL Gotcha *.mat files from the user supplied directory and exports both the phase history and a Python dictionary compatible with RITSAR.  The directory is specified by inputting the top-level location which contains all pass data and specifying the polarization, starting azimuth, and number of degrees of azimuth to process.\\
 
 \noindent \underline{\textbf{Parameters}}:
 \begin{itemize}
   	\item \defs{directory}{string}\\
-  		string containing directory of DIRSIG data to include the xml and envi header files.
+  		string containing directory that contains all the data for a given pass.  For example 'AFRL\_data/pass1'
   	\item \defs{pol}{string}\\
   		polarization to be processed.  For example, 'HH'.
   	\item \defs{start\_az}{int}\\
