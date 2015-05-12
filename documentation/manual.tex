@@ -24,7 +24,18 @@ Below is a description of each of the functions contained in the RITSAR package.
 
 Each of the sections below represent a module contained within the RITSAR package and each subsection details how to use each function.  The format for the title of each subsection is "function(parameters)."  This is followed by a short description of what the function does. Next, each parameter is defined.  Finally, a description of what the function returns is given.
 
-As an example, lets say you wanted to simulate your own phase history.  The function required for this is simulate\_phs located in the phsTools module.  Before this function can be used, the required parameters need to be defined.  The descriptions of each required parameter can be found in subsection \ref{simulate_phs}.  The first parameter that needs to be defined is "platform", which is a Python dictionary. A description of each key that goes into platform is also given in subsection \ref{simulate_phs}.  Once platform is defined, the user then creates an array specifying the locations of each point reflector in the scene as well as the corresponding amplitudes.  After all this is done the user can then create their own phase history, stored in the phs variable, by typing the following into the Python console:\\[2ex]phs = ritsar.phsTools.simulate\_phs(platform, points, amplitudes)\\[2ex]  For a full end-to-end demonstration, "main.py" in the ./examples folder can be run.  The default setup processes an X-band collect using the polar format algorithm.  The final lines of main.py can be commented/un-commented to use the backprojection algorithm.  For a demonstration of the omega-k algorithm, OpenCV will be required.  You will most likely also want to use a UHF setup.  To do this, simply change SARplatform to SARplatformUHF in the demo and comment/un-comment the bottom lines of the file as necessary.  The platform dictionary keys defined in SARplatform and SARplatformUHF were taken from Carrera \cite{Carrera}.\newpage
+As an example, lets say you wanted to simulate your own phase history.  The function required for this is simulate\_phs located in the phsTools module.  Before this function can be used, the required parameters need to be defined.  The descriptions of each required parameter can be found in section \ref{simulate_phs}.  The first parameter that needs to be defined is "platform", which is a Python dictionary. A description of each key that goes into platform is also given in section \ref{simulate_phs}.  Once platform is defined, the user then creates an array specifying the locations of each point reflector in the scene as well as the corresponding amplitudes.  After all this is done the user can then create their own phase history, stored in the phs variable, by typing the following into the Python console:\\[2ex]phs = ritsar.phsTools.simulate\_phs(platform, points, amplitudes)\\[2ex]  
+To get started, "sim\_demo.py" in the ./examples folder can be run.  This demo uses RITSAR's basic point simulator to generate a synthetic phase history.  The default setup processes an X-band collect using the polar format algorithm.  The final lines of main.py can be commented/un-commented to use the backprojection algorithm.  For a demonstration of the omega-k algorithm, OpenCV will be required.  You will most likely also want to use a UHF setup.  To do this, simply change SARplatform to SARplatformUHF in the demo and comment/un-comment the bottom lines of the file as necessary.  The platform dictionary keys defined in SARplatform and SARplatformUHF were taken from Carrera \cite{Carrera}.
+
+Also included in the ./examples folder are examples of how to process actual data.  Full advantage is taken of Python's object oriented nature by including all system parameters in a platform object.  As explained in the phsRead section, only a few steps are required to use the algorithms in this package for any arbitrary data set.  They are:
+\begin{enumerate}
+\item read in the phase history and export as a NumPy array
+\item read in the auxillary data
+\item place auxillary data in a platform dictionary and export
+\end{enumerate}
+The help files below detail what parameters need to be defined in the platform dictionary for a given function.  For an arbitrary data source, the most rigorous task will just be renaming/deriving parameters already in the auxillary data and placing them in a platform dictionary.  The source code for phsRead can be used as a reference.  Included in the source code are examples of how to translate auxillary data from a .xml file (required for DIRSIG), a .mat file (required for the AFRL data set), and a binary file (required for the Sandia data set) into a python dictionary readable by RITSAR.  Once the platform dictionary is defined, no additional work is needed use the algorithms in this package.  Simply specify an image plane using imgTools.img\_plane\_dict() \ref{sec:img_dict} or manually using the guidelines in \ref{sec:polar_format}.
+
+\newpage
 
 
 \section{phsTools}
@@ -85,7 +96,7 @@ Corrects Residual Video Phase using the formulation in Carrera Appendix C.\\
     \item \defs{chirprate}{float}\\
     	chirprate in $Hz/s$
 	\item \defs{delta\_r}{float}\\
-	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
   \end{itemize}
 \end{itemize}
 
@@ -134,6 +145,7 @@ This program converts a phase history that was demodulated using a pulse dependa
 In this section the img\_plane dictionary is introduced.  A sample img\_plane dictionary generator is provided in sarit/examples/dictionaries.
 
 \subsection{polar\_format(phs, platform, img\_plane, taylor)}
+\label{sec:polar_format}
 This is the Polar Format algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs. 
 
 The phase history data is collected on a two-dimensional surface in k-space.  For each pulse, a strip of this surface is collected.  The first step in this program is to project each strip onto the (ku,kv) plane defined by the normal vector contained in the image plane dictionary.  This will result in data that is unevenly spaced in (ku,kv). This unevenly spaced data is interpolated onto an evenly spaced (ku,kv) grid defined in the image plane dictionary.  The interpolation is done along the radial direction first, then along the along-track direction.  Further details of this method are given in both the Jakowitz and Carrera texts.\\
@@ -197,7 +209,7 @@ This is the Backprojection algorithm.  The phase history data as well as platfor
 		\item\defs{k\_r}{float array [nsamples]}\\
 	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
     	\item \defs{delta\_r}{float}\\
-    	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+    	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
 	\end{itemize}
   	\item \defs{img\_plane}{dictionary}\\
   	dictionary that has the following keys defined:
@@ -262,7 +274,8 @@ The first step in the algorithm is to perform a 1D FT along azimuth.  A matched 
 \newpage
 
 \subsection{img\_plane\_dict(platform, res\_factor, n\_hat, aspect, upsample)}
-This function defines the image plane parameters.  The user specifies the image resolution using the res\_factor.  A res\_factor of 1 yields a (u,v) image plane whose pixels are sized at the theoretical resolution limit of the system (derived using delta\_r which in turn was derived using the bandwidth.  The user can also adjust the aspect of the image grid.  This defaults to nsamples/npulses.
+\label{sec:img_dict}
+This function defines the image plane parameters.  The user specifies the image resolution using the res\_factor.  A res\_factor of 1 yields a (u,v) image plane whose pixels are sized at the theoretical resolution limit of the system (derived using delta\_r which in turn was derived using the bandwidth).  The user can also adjust the aspect of the image grid.  This defaults to nsamples/npulses.
 
 'n\_hat' is a user specified value that defines the image plane orientation w.r.t. to the nominal ground plane.\\
 
@@ -279,7 +292,7 @@ This function defines the image plane parameters.  The user specifies the image 
 	    \item \defs{R\_c}{float array [3]}\\
 	       	vector to scene center at aperture center
 	    \item\defs{delta\_r}{float array [nsamples]}\\
-	    	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+	    	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
 	\end{itemize}
 	\item\defs{res\_factor}{float}\\
 	image resolution in units of theoretical resolution size.  This defaults to 1.0.
@@ -312,7 +325,7 @@ This function defines the image plane parameters.  The user specifies the image 
 		    \item \defs{k\_v}{float array [size(v)]}\\
 		    	image plane spatial frequencies along v axis.  v is defined to lie perpendicular to the slant range vector in the image plane.
 		    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
-		    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+		    	flattened array specifying the 3-dimensional location of each pixel in a rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.  If the image plane is specified in this manner, only a time domain algorithm (backprojection) can be used to process the data.
 		\end{itemize}
 \end{itemize}
 
@@ -377,7 +390,7 @@ This function reads in the DIRSIG xml data as well as the envi header file from 
 	    \item \defs{B\_IF}{float}\\
 	    	bandwidth of intermediate frequency, demodulated signal.
 	    \item \defs{delta\_r}{float}\\
-       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
     	\item \defs{delta\_t}{float}\\
     		time between fast time samples.  Defined as $(\mbox{A/D sampling rate})^{-1}$
     	\item \defs{vp}{float}\\
@@ -398,13 +411,13 @@ This function reads in the DIRSIG xml data as well as the envi header file from 
 \end{itemize}
 
 
-\subsection{AFRL(directory, pol, start\_az, n\_az=3)}
-This function reads in the AFRL Gotcha *.mat files from the user supplied directory and exports both the phase history and a Python dictionary compatible with RITSAR.  The directory is specified by inputting the top-level location which contains all pass data and specifying the polarization, starting azimuth, and number of degrees of azimuth to process.\\
+\section{AFRL(directory, pol, start\_az, n\_az=3)}
+This function reads in the AFRL Gotcha *.mat files from the user supplied directory and exports both the phs and a Python dictionary compatible with RITSAR.
 
 \noindent \underline{\textbf{Parameters}}:
 \begin{itemize}
   	\item \defs{directory}{string}\\
-  		string containing directory that contains all the data for a given pass.  For example 'AFRL\_data/pass1'
+  		string containing directory of DIRSIG data to include the xml and envi header files.
   	\item \defs{pol}{string}\\
   		polarization to be processed.  For example, 'HH'.
   	\item \defs{start\_az}{int}\\
@@ -433,7 +446,7 @@ This function reads in the AFRL Gotcha *.mat files from the user supplied direct
 	    \item \defs{pos}{float array [npulses x 3]}\\
 	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
 	    \item \defs{delta\_r}{float}\\
-       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
 	    \item \defs{R\_c}{float array [3]}\\
 	     	vector to scene center at aperture center
 	    \item \defs{t}{float array [nsamples]}\\
@@ -478,7 +491,7 @@ This function reads in the Sandia *.phs and *.au2 files from the user supplied d
 	    \item \defs{pos}{float array [npulses x 3]}\\
 	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
 	    \item \defs{delta\_r}{float}\\
-       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in subsection \ref{simulate_phs}.
+       	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
 	    \item \defs{R\_c}{float array [3]}\\
 	     	vector to scene center at aperture center
 	    \item \defs{t}{float array [nsamples]}\\
