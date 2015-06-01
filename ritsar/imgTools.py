@@ -356,6 +356,8 @@ def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect =
     npulses = platform['npulses']   
     if not(aspect):
         aspect = 1.0*nsamples/npulses
+    else:
+        npulses = nsamples/aspect
     
     #Import relevant platform parameters
     R_c = platform['R_c']    
