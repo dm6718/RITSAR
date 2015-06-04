@@ -31,7 +31,6 @@ def AFRL(directory, pol, start_az, n_az=3):
     for fname in fnames:
         #Convert MATLAB structure to Python dictionary
         MATdata = loadmat(fname)['data'][0][0]
-        af = MATdata[-1][0][0]
         
         data =\
         {
@@ -43,11 +42,6 @@ def AFRL(directory, pol, start_az, n_az=3):
         'r0'    :   MATdata[5][0],
         'th'    :   MATdata[6][0],
         'phi'   :   MATdata[7][0],
-        'af'    :   
-            {
-            'r' :   af[0],
-            'ph':   af[1]    
-            }
         }
         
         #Define phase history
@@ -77,10 +71,6 @@ def AFRL(directory, pol, start_az, n_az=3):
                     pos[npulses/2-1:npulses/2+1],
                     axis = 0)
         
-        #Autofocus parameters
-        af_r = data['af']['r']
-        af_ph = data['af']['ph']
-        
         #Save values to dictionary for export
         platform_tmp = \
         {
@@ -94,8 +84,6 @@ def AFRL(directory, pol, start_az, n_az=3):
             'R_c'       :   R_c,
             't'         :   t,
             'k_r'       :   k_r,
-            'af_r'      :   af_r,
-            'af_ph'     :   af_ph
         }
         platform.append(platform_tmp)
     
@@ -104,14 +92,8 @@ def AFRL(directory, pol, start_az, n_az=3):
     npulses = int(phs.shape[0])
     
     pos = platform[0]['pos']
-    af_r = platform[0]['af_r']
-    af_ph = platform[0]['af_ph']
     for i in xrange(1, n_az):
         pos = np.vstack((pos, platform[i]['pos']))
-                    
-        af_r = np.hstack((af_r, platform[i]['af_r']))
-                          
-        af_ph = np.hstack((af_ph, platform[i]['af_ph']))
                        
     if np.mod(npulses,2)>0:
         R_c = pos[npulses/2]
@@ -125,8 +107,6 @@ def AFRL(directory, pol, start_az, n_az=3):
     platform['npulses'] =   npulses
     platform['pos']     =   pos
     platform['R_c']     =   R_c
-    platform['af_r']    =   af_r.T
-    platform['af_ph']   =   af_ph.T
     
     return(phs, platform)
     
