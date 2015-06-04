@@ -18,7 +18,6 @@ cmap = cm.Greys_r
 
 #Include SARIT toolset
 from ritsar import phsRead
-from ritsar import phsTools
 from ritsar import imgTools
 
 #Define top level directory containing *.mat file
@@ -30,15 +29,12 @@ start_az = 1
 #Import phase history and create platform dictionary
 [phs, platform] = phsRead.AFRL(directory, pol, start_az, n_az = 4)
 
-#Correct for reisdual video phase
-phs_corr = phsTools.RVP_correct(phs, platform)
-
 #Create image plane dictionary
 img_plane = imgTools.img_plane_dict(platform, res_factor = 1.5, upsample = True, aspect = 1.0)
 
 #Apply algorithm of choice to phase history data
-img_bp = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 43, upsample = 6)
-img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
+img_bp = imgTools.backprojection(phs, platform, img_plane, taylor = 43, upsample = 6)
+img_pf = imgTools.polar_format(phs, platform, img_plane, taylor = 43)
 
 #Output image
 plt.imshow(np.abs(img_bp)**0.5, cmap = cm.Greys_r)
