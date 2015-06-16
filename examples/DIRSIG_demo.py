@@ -21,7 +21,7 @@ from ritsar import phsRead
 from ritsar import phsTools
 from ritsar import imgTools
 
-#Define directory containing *.au2 and *.phs files
+#Define directory containing *.hdr and *.img files
 directory = './data/DIRSIG/'
 
 #Import phase history and create platform dictionary
