@@ -108,6 +108,12 @@ def AFRL(directory, pol, start_az, n_az=3):
     platform['pos']     =   pos
     platform['R_c']     =   R_c
     
+    #Synthetic aperture length
+    L = norm(pos[-1]-pos[0])
+
+    #Add k_y
+    platform['k_y'] = np.linspace(-npulses/2,npulses/2,npulses)*2*pi/L
+    
     return(phs, platform)
     
 def Sandia(directory):
@@ -358,7 +364,10 @@ def DIRSIG(directory):
                 axis = 0)
                 
     #Derived Parameters
-    T = np.arange(T0, T1, delta_t)
+    if np.mod(nsamples,2)==0:
+        T = np.arange(T0, T1+delta_t, delta_t)
+    else:
+        T = np.arange(T0, T1, delta_t)
     
     #Mix signal
     signal = np.zeros(phs.shape)+0j
