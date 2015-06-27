@@ -1,7 +1,7 @@
 #Include depedencies
 import cv2
 import numpy as np
-from numpy import dot, pi, exp, sqrt
+from numpy import dot, pi, exp, sqrt, inf
 from numpy.linalg import norm
 import matplotlib.pylab as plt
 from scipy.stats import linregress
@@ -658,28 +658,28 @@ def imshow(img, dB_scale = [0,0]):
 #                                                                             #
 ###############################################################################
 
+    #Convert to dB
+    img = 10*np.log10(np.abs(img)/np.abs(img).max())
+    img[img == -inf] = -10000
+
     #Determine if the image is RGB
     if len(img.shape) != 3:
     
         #Display the image
         if dB_scale == [0,0]:
-            plt.imshow(10*np.log10(np.abs(img)/np.abs(img).max()), cmap=cm.Greys_r)
+            plt.imshow(img, cmap=cm.Greys_r)
         else:
-            plt.imshow(10*np.log10(np.abs(img)/np.abs(img).max()), cmap=cm.Greys_r,
+            plt.imshow(img, cmap=cm.Greys_r,
                        vmin = dB_scale[0], vmax = dB_scale[-1])
     
     #If the image is RGB                 
     else:
         #Display the image
-        img_RGB = 10*np.log10(np.abs(img)/np.abs(img).max())
         if dB_scale == [0,0]:
-            img_RGB = (img_RGB-img_RGB.min())/(img_RGB.max()-img_RGB.min())
+            img_RGB = (img-img.min())/(img.max()-img.min())
             plt.imshow(img_RGB)
         else:
-            img_RGB[img_RGB<=dB_scale[0]] = dB_scale[0]
-            img_RGB[img_RGB>=dB_scale[-1]] = dB_scale[-1]
-            img_RGB = (img_RGB-img_RGB.min())/(img_RGB.max()-img_RGB.min())
+            img[img<=dB_scale[0]] = dB_scale[0]
+            img[img>=dB_scale[-1]] = dB_scale[-1]
+            img_RGB = (img-img.min())/(img.max()-img.min())
             plt.imshow(img_RGB)
-        
-        
-    
