@@ -332,7 +332,7 @@ def DIRSIG(directory):
     npulses     = int(phs.shape[0])
     vp          = float(get(root, 'speed'))
     delta_t     = float(get(root, 'delta'))
-    t           = np.linspace(-nsamples/2, nsamples/2, nsamples)*delta_t
+    t           = np.linspace(-nsamples/2, nsamples/2, nsamples)*delta_t/2
     prf         = float(get(root, 'clockrate'))
     chirprate   = float(get(root, 'chirprate'))
     T_p         = float(get(root, 'pulseduration'))

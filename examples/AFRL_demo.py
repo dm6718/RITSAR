@@ -11,10 +11,7 @@ from sys import path
 path.append('../')
 
 #Include standard library dependencies
-import numpy as np
 import matplotlib.pylab as plt
-from matplotlib import cm
-cmap = cm.Greys_r
 
 #Include SARIT toolset
 from ritsar import phsRead
@@ -37,15 +34,5 @@ img_bp = imgTools.backprojection(phs, platform, img_plane, taylor = 43, upsample
 #img_pf = imgTools.polar_format(phs, platform, img_plane, taylor = 43)
 
 #Output image
-plt.imshow(np.abs(img_bp)**0.5, cmap = cm.Greys_r)
+imgTools.imshow(img_bp, dB_scale = [-30,0])
 plt.title('Backprojection')
-
-#Autofocus image
-print('autofocusing')
-#img_af, af_ph = imgTools.autoFocus(img_bp, win = 0, win_params = [300,0.8])
-img_af, af_ph = imgTools.autoFocus(img_bp, win = 0, win_params = [300,0.8])
-
-#Output autofocused image
-plt.figure()
-plt.imshow(np.abs(img_af)**0.5, cmap = cm.Greys_r)
-plt.title('Autofocused Polar Format')

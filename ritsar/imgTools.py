@@ -648,3 +648,38 @@ def autoFocus2(img, win = 'auto', win_params = [100,0.5]):
     print('number of iterations: %i'%(iii+1))
                      
     return(img_af, af_ph)
+    
+def imshow(img, dB_scale = [0,0]):
+###############################################################################
+#                                                                             #
+#  This program displays the processed data in dB.  The brightest point in    #
+#  the image is used as the reference and the user can define the scale for   #
+#  the intensity range.                                                       #
+#                                                                             #
+###############################################################################
+
+    #Determine if the image is RGB
+    if len(img.shape) != 3:
+    
+        #Display the image
+        if dB_scale == [0,0]:
+            plt.imshow(10*np.log10(np.abs(img)/np.abs(img).max()), cmap=cm.Greys_r)
+        else:
+            plt.imshow(10*np.log10(np.abs(img)/np.abs(img).max()), cmap=cm.Greys_r,
+                       vmin = dB_scale[0], vmax = dB_scale[-1])
+    
+    #If the image is RGB                 
+    else:
+        #Display the image
+        img_RGB = 10*np.log10(np.abs(img)/np.abs(img).max())
+        if dB_scale == [0,0]:
+            img_RGB = (img_RGB-img_RGB.min())/(img_RGB.max()-img_RGB.min())
+            plt.imshow(img_RGB)
+        else:
+            img_RGB[img_RGB<=dB_scale[0]] = dB_scale[0]
+            img_RGB[img_RGB>=dB_scale[-1]] = dB_scale[-1]
+            img_RGB = (img_RGB-img_RGB.min())/(img_RGB.max()-img_RGB.min())
+            plt.imshow(img_RGB)
+        
+        
+    

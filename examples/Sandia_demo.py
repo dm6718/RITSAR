@@ -10,12 +10,6 @@
 from sys import path
 path.append('../')
 
-#Include standard library dependencies
-import numpy as np
-import matplotlib.pylab as plt
-from matplotlib import cm
-cmap = cm.Greys_r
-
 #Include SARIT toolset
 from ritsar import phsRead
 from ritsar import phsTools
@@ -27,7 +21,7 @@ directory = './data/Sandia/'
 #Import phase history and create platform dictionary
 [phs, platform] = phsRead.Sandia(directory)
 
-#Correct for reisdual video phase
+#Correct for residual video phase
 phs_corr = phsTools.RVP_correct(phs, platform)
 
 #Import image plane dictionary from './parameters/img_plane'
@@ -39,4 +33,4 @@ img_plane = imgTools.img_plane_dict(platform,
 img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
 
 #Output image
-plt.imshow(np.abs(img_pf)**(0.1), cmap = cmap)
+imgTools.imshow(img_pf, [-45,0])
