@@ -660,7 +660,7 @@ def imshow(img, dB_scale = [0,0]):
 
     #Convert to dB
     img = 10*np.log10(np.abs(img)/np.abs(img).max())
-    img[img == -inf] = -10000
+    img[img == -inf] = dB_scale[0]
 
     #Determine if the image is RGB
     if len(img.shape) != 3:
