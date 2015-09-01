@@ -19,7 +19,9 @@ def AFRL(directory, pol, start_az, n_az=3):
 ##############################################################################
     
     #Get filenames
-    prefix = '/'+pol+'/data_3dsar_pass1_az'
+    walker = os.walk(directory+'/'+pol)
+    w = walker.next()
+    prefix = '/'+pol+'/'+w[2][0][0:19]
     az_str = []
     fnames = []
     az = np.arange(start_az, start_az+n_az)
@@ -365,7 +367,7 @@ def DIRSIG(directory):
                 
     #Derived Parameters
     if np.mod(nsamples,2)==0:
-        T = np.arange(T0, T1+delta_t, delta_t)
+        T = np.arange(T0, T1+0*delta_t, delta_t)
     else:
         T = np.arange(T0, T1, delta_t)
     
