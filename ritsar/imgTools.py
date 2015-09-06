@@ -149,7 +149,7 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     real_rad_interp = np.zeros([npulses,nu])
     imag_rad_interp = np.zeros([npulses,nu])
     ky_new = np.zeros([npulses,nu])
-    for i in xrange(npulses):
+    for i in range(npulses):
         print('range interpolating for pulse %i'%(i+1))
         real_rad_interp[i,:] = np.interp(k_ui, ku[i,:], 
             phs.real[i,:]*win1, left = 0, right = 0)
@@ -162,14 +162,14 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     imag_polar = np.zeros([nv,nu])
     isSort = (ky_new[npulses/2, nu/2] < ky_new[npulses/2+1, nu/2])
     if isSort:
-        for i in xrange(nu):
+        for i in range(nu):
             print('cross-range interpolating for sample %i'%(i+1))
             real_polar[:,i] = np.interp(k_vi, ky_new[:,i], 
                 real_rad_interp[:,i]*win2, left = 0, right = 0)
             imag_polar[:,i] = np.interp(k_vi, ky_new[:,i], 
                 imag_rad_interp[:,i]*win2, left = 0, right = 0)
     else:
-        for i in xrange(nu):
+        for i in range(nu):
             print('cross-range interpolating for sample %i'%(i+1))
             real_polar[:,i] = np.interp(k_vi, ky_new[::-1,i], 
                 real_rad_interp[::-1,i]*win2, left = 0, right = 0)
@@ -242,7 +242,7 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
     
     #Perform backprojection for each pulse
     img = np.zeros(nu*nv)+0j
-    for i in xrange(npulses):
+    for i in range(npulses):
         print("Calculating backprojection for pulse %i" %i)
         
         r0 = np.array([pos[i]]).T
@@ -301,7 +301,7 @@ def omega_k(phs, platform, taylor = 43, upsample = 6):
     K_xi = np.linspace(K_xi_min, K_xi_max, nsamples)
     
     S = np.zeros([npulses,nsamples])+0j
-    for i in xrange(npulses):
+    for i in range(npulses):
         K_x = np.nan_to_num(sqrt(K_r[i,:]**2-K_y[i,:]**2))
         
         f_real = interp1d(K_x, S_Kx_Kr_mf[i,:].real, kind = 'linear', bounds_error = 0, fill_value = 0)
@@ -441,14 +441,14 @@ def autoFocus(img, win = 'auto', win_params = [100,0.5]):
     rms = []
     
     #Compute phase error and apply correction
-    for iii in xrange(max_iter):
+    for iii in range(max_iter):
         
         #Find brightest azimuth sample in each range bin
         index = np.argsort(np.abs(img_af), axis=0)[-1]
         
         #Circularly shift image so max values line up   
         f = np.zeros(img.shape)+0j
-        for i in xrange(nsamples):
+        for i in range(nsamples):
             f[:,i] = np.roll(img_af[:,i], npulses/2-index[i])
         
         if win == 'auto':
@@ -557,14 +557,14 @@ def autoFocus2(img, win = 'auto', win_params = [100,0.5]):
     rms = []
     
     #Compute phase error and apply correction
-    for iii in xrange(max_iter):
+    for iii in range(max_iter):
         
         #Find brightest azimuth sample in each range bin
         index = np.argsort(np.abs(img_af), axis=0)[-1]
         
         #Circularly shift image so max values line up   
         f = np.zeros(img.shape)+0j
-        for i in xrange(nsamples):
+        for i in range(nsamples):
             f[:,i] = np.roll(img_af[:,i], npulses/2-index[i])
         
         if win == 'auto':

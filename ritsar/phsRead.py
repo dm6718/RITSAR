@@ -94,7 +94,7 @@ def AFRL(directory, pol, start_az, n_az=3):
     npulses = int(phs.shape[0])
     
     pos = platform[0]['pos']
-    for i in xrange(1, n_az):
+    for i in range(1, n_az):
         pos = np.vstack((pos, platform[i]['pos']))
                        
     if np.mod(npulses,2)>0:
@@ -193,7 +193,7 @@ def Sandia(directory):
     fscale = np.zeros([npulses,])
     c_stab = np.zeros([npulses,3])
     #build up arrays for record(npulses+6)
-    for n in xrange(npulses):
+    for n in range(npulses):
         f.seek((n+5)*44)
         data = np.fromfile(f, dtype = np.dtype([
             ('rpoint','f4',(3,)),
@@ -373,7 +373,7 @@ def DIRSIG(directory):
     
     #Mix signal
     signal = np.zeros(phs.shape)+0j
-    for i in xrange(0,npulses,1):
+    for i in range(0,npulses,1):
         r_0 = norm(pos[i])
         tau_c = 2*r_0/c
         ref = np.exp(-1j*(2*pi*f_0*(T-tau_c)+chirprate*(T-tau_c)**2))

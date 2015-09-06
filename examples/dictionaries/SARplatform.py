@@ -73,7 +73,7 @@ def plat_dict(aux = []):
     theta = np.zeros(npulses)
     R_vel = pos[-1]-pos[0]
     R_vel_norm = norm(R_vel)
-    for i in xrange(npulses):
+    for i in range(npulses):
         num = np.dot(pos[i], R_vel)
         den = norm(pos[i])*R_vel_norm
         theta[i] = arccos(num/den)-pi/2

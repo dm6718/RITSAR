@@ -26,7 +26,7 @@ def simulate_phs(platform, points = [[0,0,0]], amplitudes = [1]):
     
     #Simulate the phase history for each pulse, for each point
     phs = np.zeros([npulses, nsamples])+0j
-    for i in xrange(npulses):
+    for i in range(npulses):
         print('simulating pulse %i'%(i+1))
         
         R_0 = norm(pos[i])
