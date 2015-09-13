@@ -71,13 +71,13 @@ def upsample(f,size):
     x_pad = size[1]-f.shape[1]
     y_pad = size[0]-f.shape[0]
     
-    if x_pad:
-        x_off = np.mod(f.shape[1],2)
+    if np.mod(x_pad,2):
+        x_off = 1
     else:
         x_off = 0
         
-    if y_pad:
-        y_off = np.mod(f.shape[0],2)
+    if np.mod(y_pad,2):
+        y_off = 1
     else:
         y_off = 0
     
@@ -87,3 +87,51 @@ def upsample(f,size):
     f_up = ift2(F_pad)
     
     return(f_up)
+    
+def upsample1D(f, size):
+    x_pad = size-f.size
+    
+    if np.mod(x_pad,2):
+        x_off = 1
+    else:
+        x_off = 0
+    
+    F = ft(f)
+    F_pad = np.pad(F, (x_pad/2, x_pad/2+x_off),
+                   mode = 'constant')
+    f_up = ift(F_pad)
+    
+    return(f_up)
+    
+def pad1D(f, size):
+    x_pad = size-f.size
+    
+    if np.mod(x_pad,2):
+        x_off = 1
+    else:
+        x_off = 0
+    
+    
+    f_pad = np.pad(f, (x_pad/2, x_pad/2+x_off),
+                   mode = 'constant')
+    
+    return(f_pad)
+
+def pad(f, size):
+    x_pad = size[1]-f.shape[1]
+    y_pad = size[0]-f.shape[0]
+    
+    if np.mod(x_pad,2):
+        x_off = 1
+    else:
+        x_off = 0
+        
+    if np.mod(y_pad,2):
+        y_off = 1
+    else:
+        y_off = 0
+    
+    f_pad = np.pad(f, ((y_pad/2,y_pad/2+y_off),(x_pad/2, x_pad/2+x_off)),
+                   mode = 'constant')
+    
+    return(f_pad)
