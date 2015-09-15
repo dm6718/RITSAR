@@ -3,13 +3,13 @@
 #  This code performs image reconstruction using Mehrdad Soumekh's Spatial   #
 #  Frequency interpolation method. It has essentially been copied from his   #
 #  MATLAB algorithm for spotlight processing and translated to Python.  The  #
-#  parameters used in this file are based on the ones in the Carrera text	 #
+#  parameters used in this file are based on the ones in the Carrera text	  #
 #  for the X-band setup.  I could not get this to work due to memory errors. #
 #  The A/D sampling requirements are 8 times higher to perform matched       #
-#  filtering with the modulated, 185MHz bandwidth signal (plus a 2*f0 gaurd	 #
+#  filtering with the modulated, 185MHz bandwidth signal (plus a 2*f0 gaurd  #
 #  band) as opposed to the sampling requirements needed for the demodulated  #
 #  signal.  The higher carrier frequency also results in a 14x increase in   #
-#  the number of synthetic aperture samples required to perform the			 #
+#  the number of synthetic aperture samples required to perform the			  #
 #  frequency mapping prescribed by Soumekh as opposed to polar format mapping.
 #                                                                            #
 ##############################################################################
