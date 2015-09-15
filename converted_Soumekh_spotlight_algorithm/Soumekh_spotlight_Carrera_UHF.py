@@ -13,6 +13,7 @@ import numpy as np
 import ritsar.signal as sig
 from scipy.fftpack import *
 from ritsar.signal import *
+import ritsar.signal as sig
 import matplotlib.pylab as plt
 from scipy.interpolate import interp1d
 plt.set_cmap(cm.Greys)
