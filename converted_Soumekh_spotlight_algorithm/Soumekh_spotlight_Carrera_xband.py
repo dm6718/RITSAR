@@ -9,7 +9,7 @@
 #  filtering with the modulated, 185MHz bandwidth signal (plus a 2*f0 gaurd  #
 #  band) as opposed to the sampling requirements needed for the demodulated  #
 #  signal.  The higher carrier frequency also results in a 14x increase in   #
-#  the number of synthetic aperture samples required to perform the			  #
+#  the number of synthetic aperture samples required to perform the          #
 #  frequency mapping prescribed by Soumekh as opposed to polar format mapping.
 #                                                                            #
 ##############################################################################
