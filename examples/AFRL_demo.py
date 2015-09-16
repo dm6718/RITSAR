@@ -27,11 +27,11 @@ start_az = 1
 [phs, platform] = phsRead.AFRL(directory, pol, start_az, n_az = 3)
 
 #Create image plane dictionary
-img_plane = imgTools.img_plane_dict(platform, res_factor = 1.5, upsample = True, aspect = 1.0)
+img_plane = imgTools.img_plane_dict(platform, res_factor = 1.4, upsample = True, aspect = 1.0)
 
 #Apply algorithm of choice to phase history data
-img_bp = imgTools.backprojection(phs, platform, img_plane, taylor = 43, upsample = 6)
-#img_pf = imgTools.polar_format(phs, platform, img_plane, taylor = 43)
+img_bp = imgTools.backprojection(phs, platform, img_plane, taylor = 20, upsample = 6)
+#img_pf = imgTools.polar_format(phs, platform, img_plane, taylor = 20)
 
 #Output image
 imgTools.imshow(img_bp, dB_scale = [-30,0])

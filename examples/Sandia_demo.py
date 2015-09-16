@@ -30,7 +30,7 @@ img_plane = imgTools.img_plane_dict(platform,
 
 #Apply polar format algorithm to phase history data
 #(Other options not available since platform position is unknown)
-img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
+img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 30)
 
 #Output image
 imgTools.imshow(img_pf, [-45,0])

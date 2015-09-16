@@ -43,9 +43,9 @@ phs_corr = phsTools.RVP_correct(phs, platform)
 phs_fixed = phsTools.phs_to_const_ref(phs_corr, platform, upchirp = 1)
 
 #Apply algorithm of choice to phase history data
-img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 43)
-#img_wk = imgTools.omega_k(phs_fixed, platform, taylor = 43, upsample = 2)
-#img_bp = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 0, upsample = 2)
+img_pf = imgTools.polar_format(phs_corr, platform, img_plane, taylor = 17)
+#img_wk = imgTools.omega_k(phs_fixed, platform, taylor = 17, upsample = 2)
+#img_bp = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 17, upsample = 2)
 
 #Output image
 imgTools.imshow(img_pf, dB_scale = [-25,0])
