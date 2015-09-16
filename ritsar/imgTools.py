@@ -392,6 +392,8 @@ def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect =
     img_plane =\
     {
     'n_hat'     :   n_hat,
+    'u_hat'     :   u_hat,
+    'v_hat'     :   v_hat,
     'du'        :   du,
     'dv'        :   dv,
     'u'         :   u,
