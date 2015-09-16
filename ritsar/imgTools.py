@@ -77,7 +77,7 @@ Press enter when finished\
     return(params[0:2])
 
 
-def polar_format(phs, platform, img_plane, taylor = 43):
+def polar_format(phs, platform, img_plane, taylor = 20):
 ##############################################################################
 #                                                                            #
 #  This is the Polar Format algorithm.  The phase history data as well as    #
@@ -184,7 +184,7 @@ def polar_format(phs, platform, img_plane, taylor = 43):
     
     return(img)
 
-def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
+def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6):
 ##############################################################################
 #                                                                            #
 #  This is the Backprojection algorithm.  The phase history data as well as  #
@@ -225,16 +225,7 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
     
     #Zero pad phase history
     N_fft = 2**(int(np.log2(nsamples*upsample))+1)
-    pad = N_fft-nsamples
-    phs_pad = np.pad(phs_filt, ((0,0),(pad/2,pad/2)), mode = 'constant')
-    
-    if pad:
-        pad_off = np.mod(phs.shape[1],2)
-    else:
-        pad_off = 0
-    
-    phs_pad = np.pad(phs_filt, ((0,0),(pad/2, pad/2+pad_off)),
-                   mode = 'constant')
+    phs_pad = sig.pad(phs_filt, [npulses,N_fft])
     
     #Filter phase history and perform FT w.r.t t
     Q = sig.ft(phs_pad)    
@@ -247,16 +238,18 @@ def backprojection(phs, platform, img_plane, taylor = 43, upsample = 6):
         
         r0 = np.array([pos[i]]).T
         dr_i = norm(r0)-norm(r-r0, axis = 0)
+    
+        Q_real = np.interp(dr_i, dr, Q[i].real)
+        Q_imag = np.interp(dr_i, dr, Q[i].imag)
         
-        Q_hat = np.interp(dr_i, dr, Q[i,::-1].real)+\
-                1j*np.interp(dr_i, dr, Q[i,::-1].imag)        
-        img += Q_hat*np.exp(1j*k_c*dr_i)
+        Q_hat = Q_real+1j*Q_imag        
+        img += Q_hat*np.exp(-1j*k_c*dr_i)
         
-    img = np.reshape(img, [nv, nu])
-    return(img[:,::-1])
+    img = np.reshape(img, [nv, nu])[::-1,:]
+    return(img)
     
 
-def omega_k(phs, platform, taylor = 43, upsample = 6):
+def omega_k(phs, platform, taylor = 20, upsample = 6):
 ##############################################################################
 #                                                                            #
 #  This is an omega-k algorithm based off of the algorithm prescribed in the #
