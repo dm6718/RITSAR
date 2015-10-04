@@ -245,7 +245,7 @@ def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6):
         Q_hat = Q_real+1j*Q_imag        
         img += Q_hat*np.exp(-1j*k_c*dr_i)
     
-    r0 = np.array([pos[nsamples/2]]).T
+    r0 = np.array([pos[npulses/2]]).T
     dr_i = norm(r0)-norm(r-r0, axis = 0)
     img = img*np.exp(-1j*k_c*dr_i)
     img = np.reshape(img, [nv, nu])[::-1,:]
