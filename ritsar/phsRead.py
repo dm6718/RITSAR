@@ -77,6 +77,7 @@ def AFRL(directory, pol, start_az, n_az=3):
         platform_tmp = \
         {
             'f_0'       :   f_0,
+            'freq'      :   freq,
             'chirprate' :   chirprate,
             'B_IF'      :   B_IF,
             'nsamples'  :   nsamples,
@@ -334,9 +335,9 @@ def DIRSIG(directory):
     npulses     = int(phs.shape[0])
     vp          = float(get(root, 'speed'))
     delta_t     = float(get(root, 'delta'))
-    t           = np.linspace(-nsamples/2, nsamples/2, nsamples)*delta_t/2
+    t           = np.linspace(-nsamples/2, nsamples/2, nsamples)*delta_t
     prf         = float(get(root, 'clockrate'))
-    chirprate   = float(get(root, 'chirprate'))
+    chirprate   = float(get(root, 'chirprate'))/2
     T_p         = float(get(root, 'pulseduration'))
     B           = T_p*chirprate
     B_IF        = (t.max() - t.min())*chirprate
@@ -376,12 +377,13 @@ def DIRSIG(directory):
     for i in range(0,npulses,1):
         r_0 = norm(pos[i])
         tau_c = 2*r_0/c
-        ref = np.exp(-1j*(2*pi*f_0*(T-tau_c)+chirprate*(T-tau_c)**2))
+        ref = np.exp(-1j*(2*pi*f_0*(T-tau_c)+2*chirprate*(T-tau_c)**2))
         signal[i,:] = ref*phs[i,:]
     
     platform = \
     {
         'f_0'       :   f_0,
+        'freq'      :   freq*2,
         'chirprate' :   chirprate,
         'B'         :   B,
         'B_IF'      :   B_IF,

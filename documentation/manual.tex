@@ -35,6 +35,8 @@ Also included in the ./examples folder are examples of how to process actual dat
 \end{enumerate}
 The function descriptions below detail what parameters need to be defined in the platform dictionary for a given function.  For an arbitrary data source, the most rigorous task will just be renaming/deriving parameters already in the auxillary data and placing them in a platform dictionary.  The source code for phsRead can be used as a reference.  Included in the source code are examples of how to translate auxillary data from a .xml file (required for DIRSIG), a .mat file (required for the AFRL data set), and a binary file (required for the Sandia data set) into a python dictionary readable by RITSAR.  Once the platform dictionary is defined, no additional work is needed use the algorithms in this package.  Simply specify an image plane using imgTools.img\_plane\_dict() \ref{sec:img_dict} or manually using the guidelines in \ref{sec:polar_format}.
 
+One note to make about this software is that the signal model assumes the fast-time range gate is always centered on the round trip delay to the scene center.  I am working on a separate version of RITSAR that assumes the range gate has a fixed start time with respect to the transmitted start time.
+
 \newpage
 
 
@@ -138,6 +140,32 @@ This program converts a phase history that was demodulated using a pulse dependa
 	resultant phase history, compensated to a line
 \end{itemize}
 
+\subsection{reMoComp(phs, platform, center)}
+This is the re-motion compensation algorithm.  It re-motion compensates the phase history to a new scene center.  The "center" argument is the 3D vector (in meters) that points to the new scene center using the old scene center as the origin.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history that was compensated to a point
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item\defs{k\_r}{float array [nsamples]}\\
+	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+	\end{itemize}
+	\item \defs{center}{array [3]}\\
+  	3D vector (in meters) that points to the new scene center using the old scene center as the origin
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{phase\_history}{complex array [npulses x nsamples]}\\
+	resultant phase history, compensated to new scene center
+\end{itemize}
+
 \newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,50 +217,6 @@ The phase history data is collected on a two-dimensional surface in k-space.  Fo
 	processed image
 \end{itemize}
 
-\subsection{backprojection(phs, platform, img\_plane, taylor, \mbox{upsample})}
-This is the Backprojection algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs.  The (x,y,z) locations of each pixel are required, as well as the size of the final image (interpreted as [size(v) x size(u)]).\\
-
-\noindent \underline{\textbf{Parameters}}:
-
-\begin{itemize}
-	\item \defs{phs}{complex array [npulses x nsamples]}\\
-  	complex phase history
-  	\item \defs{platform}{dictionary}\\
-  	dictionary that has the following keys defined:
-	\begin{itemize}
-    	\item \defs{nsamples}{int}\\
-    		number of fast time samples
-	    \item \defs{npulses}{int}\\
-	    	number of pulses
-	    \item \defs{pos}{float array [npulses x 3]}\\
-	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
-		\item\defs{k\_r}{float array [nsamples]}\\
-	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
-    	\item \defs{delta\_r}{float}\\
-    	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
-	\end{itemize}
-  	\item \defs{img\_plane}{dictionary}\\
-  	dictionary that has the following keys defined:
-	\begin{itemize}
-	    \item \defs{u}{float array [len(u)]}\\
-	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
-	    \item \defs{v}{float array [len(v)]}\\
-	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
-	    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
-	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
-	\end{itemize}
-	\item\defs{taylor}{int}\\
-	attenuation factor for taylor window in dB.  defaults to 43 dB.
-	\item\defs{upsample}{int}\\
-	upsampling factor, default is 6.
-\end{itemize}
-
-\noindent \underline{\textbf{Returns}}:
-\begin{itemize}
-	\item \defs{img}{complex array [npulses x nsamples]}\\
-	processed image
-\end{itemize}
-
 \subsection{omega-k(phs, platform, taylor, upsample)}
 This is an omega-k algorithm based off of the algorithm prescribed in the Carrera text.  Only the phase history and platform files are taken as inputs, an img\_plane dictionary is not required. 
 
@@ -272,6 +256,108 @@ The first step in the algorithm is to perform a 1D FT along azimuth.  A matched 
 \end{itemize} 
 
 \newpage
+
+\subsection{backprojection(phs, platform, img\_plane, taylor, \mbox{upsample}, prnt)}
+This is the Backprojection algorithm.  The phase history data as well as platform and image plane dictionaries are taken as inputs.  The (x,y,z) locations of each pixel are required, as well as the size of the final image (interpreted as [size(v) x size(u)]).\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+    	\item \defs{nsamples}{int}\\
+    		number of fast time samples
+	    \item \defs{npulses}{int}\\
+	    	number of pulses
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+		\item\defs{k\_r}{float array [nsamples]}\\
+	    	spatial frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $\frac{4\pi}{c}(f_0+chirprate\times t)$
+    	\item \defs{delta\_r}{float}\\
+    	   	spacing between fast time samples.  Defined here as $\frac{c}{2B_{IF}}$ where, $B_{IF}$ is the bandwidth of the intermediate frequency (de-chirped) signal.  $B_{IF}$ is simply $(t_{max}-t_{min})\times chirprate$ where $t$ is the demodulated fast time, as defined in section \ref{simulate_phs}.
+	\end{itemize}
+  	\item \defs{img\_plane}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{u}{float array [len(u)]}\\
+	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
+	    \item \defs{v}{float array [len(v)]}\\
+	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
+	    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
+	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+	\end{itemize}
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+	\item\defs{upsample}{int}\\
+	upsampling factor, default is 6.
+	\item\defs{prnt}{bool}\\
+	option to print the pulse number currently being processed.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize}
+
+\newpage
+
+\subsection{DSBP(phs, platform, img\_plane, center, size, derate, taylor, ftype, V)}
+This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al.'s 2013 SPIE paper \cite{spotlight}.  In addition to the normal arguments used for the backprojection algorithm, DSBP also requires the "center and "size" arguments.  The "center" argument is the 3D vector (in meters) that points to the new scene center using the old scene center as the origin. The "size" argument is a 2 element array.  Each element describes the  extent of the digitally spotlighted scene, in units of img\_plane pixels, along azimuth and range, respectively.  The elements of size are assumed to be even numbers.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+		\item\defs{freq}{float array [nsamples]}\\
+	    	temporal frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $(f_0+chirprate\times t)$
+	\end{itemize}
+  	\item \defs{img\_plane}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{u}{float array [len(u)]}\\
+	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
+	    \item \defs{v}{float array [len(v)]}\\
+	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
+		\item \defs{u\_hat}{float array [3]}\\
+	    	unit vector for u.  Defined to lie along the slant range vector, projected onto the image plane.
+		\item \defs{v\_hat}{float array [3]}\\
+	    	unit vector for v.  Defined to lie perpendicular to the slant range vector in the image plane.
+		\item \defs{du}{float array [len(u)]}\\
+	    	pixel spacing in range direction
+		\item \defs{dv}{float array [len(v)]}\\
+	    	pixel spacing in cross-range direction
+	    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
+	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+	\end{itemize}
+	\item\defs{center}{float array[3]}\\
+	vector (in meters) that points to the new scene center using the old scene center as the origin
+	\item\defs{size}{int array[2]}\\
+	describes the extent of the digitally spotlighted scene, in units of img\_plane pixels, along azimuth and range, respectively
+	\item\defs{derate}{float}\\
+	amount by which to increase spot size. default is 1.05
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+	\item\defs{ftype}{string}\\
+	type of filter to use for decimation.  Default is 'iir' and is recommended for large scenes.  'fir' can also be chosen and is recommended fro relatively smaller scenes.
+	\item\defs{V}{string}\\
+	Describes if the spotlighted scene is large or small.  The default is 'large', which optimizes the output grid for spotlighted scenes that are a large fraction of the original scene.  If V is set to small (or anything other than 'large'), an output grid optimized for small scenes is created.
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize}
 
 \subsection{img\_plane\_dict(platform, res\_factor, n\_hat, aspect, upsample)}
 \label{sec:img_dict}
@@ -316,6 +402,10 @@ This function defines the image plane parameters.  The user specifies the image 
 		    	pixel locations in range direction.  u is defined to lie along the slant range vector, projected onto the image plane.
 			\item \defs{v}{float array [len(v)]}\\
 		    	pixel locations in cross-range direction.  v is defined to lie perpendicular to the slant range vector in the image plane.
+   			\item \defs{u\_hat}{float array [3]}\\
+   		    	unit vector for u.  Defined to lie along the slant range vector, projected onto the image plane.
+   			\item \defs{v\_hat}{float array [3]}\\
+   		    	unit vector for v.  Defined to lie perpendicular to the slant range vector in the image plane.
 			\item \defs{du}{float array [len(u)]}\\
 		    	pixel spacing in range direction
 			\item \defs{dv}{float array [len(v)]}\\
@@ -348,6 +438,27 @@ This program autofocuses an image using the Phase Gradient Algorithm.  If the pa
 \begin{itemize}
 	\item \defs{img\_af}{complex array [npulses x nsamples]}\\
 	autofocused image
+\end{itemize}
+
+\subsection{imshow(img, dB\_scale, extent)}
+This program displays the processed data in dB.  The brightest point in the image is used as the reference and the user can define the scale for the intensity range. \\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+  		complex image
+  	\item \defs{dB\_scale}{array [2]}\\
+  		decibel scale of image.  Format is [dB$_{min}$, dB$_{max}$].  The reference signal is the brightest intensity value of the input image.  In other words, the brightest resolution cell has a dB value of 0.  Intensity values for all other cells are w.r.t. this value and are $\leq0$
+  	\item \defs{extent}{array [4]}\\
+  	  		defines the image boundaries in units of meters.  Format is [x$_{min}$, x$_{max}$, y$_{min}$, y$_{max}$]
+  	
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{array [npulses x nsamples]}\\
+	magnitude of input data displayed using the user defined decibel scale
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

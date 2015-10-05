@@ -7,7 +7,9 @@ import matplotlib.pylab as plt
 from scipy.stats import linregress
 from matplotlib import cm
 import signal as sig
+import phsTools
 from scipy.interpolate import interp1d
+from scipy.signal import decimate
 
 def phs_inscribe(img):
 ##############################################################################
@@ -97,7 +99,7 @@ def polar_format(phs, platform, img_plane, taylor = 20):
 ##############################################################################
         
     #Retrieve relevent parameters
-    c           =   3.0e8
+    c           =   299792458.0
     npulses     =   platform['npulses']
     f_0         =   platform['f_0']
     pos         =   np.asarray(platform['pos'])
@@ -183,73 +185,6 @@ def polar_format(phs, platform, img_plane, taylor = 20):
     img = np.abs(sig.ft2(phs_polar))
     
     return(img)
-
-def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6):
-##############################################################################
-#                                                                            #
-#  This is the Backprojection algorithm.  The phase history data as well as  #
-#  platform and image plane dictionaries are taken as inputs.  The (x,y,z)   #
-#  locations of each pixel are required, as well as the size of the final    #
-#  image (interpreted as [size(v) x size(u)]).                               #
-#                                                                            #
-##############################################################################
-    
-    #Retrieve relevent parameters
-    nsamples    =   platform['nsamples']
-    npulses     =   platform['npulses']
-    k_r         =   platform['k_r']
-    pos         =   platform['pos']
-    delta_r     =   platform['delta_r']
-    u           =   img_plane['u']
-    v           =   img_plane['v']
-    r           =   img_plane['pixel_locs']
-    
-    #Derive parameters
-    nu = u.size
-    nv = v.size
-    k_c = k_r[nsamples/2]
-    
-    #Create window
-    win_x = sig.taylor(nsamples,taylor)
-    win_x = np.tile(win_x, [npulses,1])
-    
-    win_y = sig.taylor(npulses,taylor)
-    win_y = np.array([win_y]).T
-    win_y = np.tile(win_y, [1,nsamples])
-    
-    win = win_x*win_y
-    
-    #Filter phase history    
-    filt = np.abs(k_r)
-    phs_filt = phs*filt*win
-    
-    #Zero pad phase history
-    N_fft = 2**(int(np.log2(nsamples*upsample))+1)
-    phs_pad = sig.pad(phs_filt, [npulses,N_fft])
-    
-    #Filter phase history and perform FT w.r.t t
-    Q = sig.ft(phs_pad)    
-    dr = np.linspace(-nsamples*delta_r/2, nsamples*delta_r/2, N_fft)
-    
-    #Perform backprojection for each pulse
-    img = np.zeros(nu*nv)+0j
-    for i in range(npulses):
-        print("Calculating backprojection for pulse %i" %i)
-        
-        r0 = np.array([pos[i]]).T
-        dr_i = norm(r0)-norm(r-r0, axis = 0)
-    
-        Q_real = np.interp(dr_i, dr, Q[i].real)
-        Q_imag = np.interp(dr_i, dr, Q[i].imag)
-        
-        Q_hat = Q_real+1j*Q_imag        
-        img += Q_hat*np.exp(-1j*k_c*dr_i)
-    
-    r0 = np.array([pos[npulses/2]]).T
-    dr_i = norm(r0)-norm(r-r0, axis = 0)
-    img = img*np.exp(-1j*k_c*dr_i)
-    img = np.reshape(img, [nv, nu])[::-1,:]
-    return(img)
     
 
 def omega_k(phs, platform, taylor = 20, upsample = 6):
@@ -332,6 +267,192 @@ def omega_k(phs, platform, taylor = 20, upsample = 6):
     img = sig.ift2(S_pad)
     
     return(img)
+    
+    
+def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6, prnt = True):
+##############################################################################
+#                                                                            #
+#  This is the Backprojection algorithm.  The phase history data as well as  #
+#  platform and image plane dictionaries are taken as inputs.  The (x,y,z)   #
+#  locations of each pixel are required, as well as the size of the final    #
+#  image (interpreted as [size(v) x size(u)]).                               #
+#                                                                            #
+##############################################################################
+    
+    #Retrieve relevent parameters
+    nsamples    =   platform['nsamples']
+    npulses     =   platform['npulses']
+    k_r         =   platform['k_r']
+    pos         =   platform['pos']
+    delta_r     =   platform['delta_r']
+    u           =   img_plane['u']
+    v           =   img_plane['v']
+    r           =   img_plane['pixel_locs']
+    
+    #Derive parameters
+    nu = u.size
+    nv = v.size
+    k_c = k_r[nsamples/2]
+    
+    #Create window
+    win_x = sig.taylor(nsamples,taylor)
+    win_x = np.tile(win_x, [npulses,1])
+    
+    win_y = sig.taylor(npulses,taylor)
+    win_y = np.array([win_y]).T
+    win_y = np.tile(win_y, [1,nsamples])
+    
+    win = win_x*win_y
+    
+    #Filter phase history    
+    filt = np.abs(k_r)
+    phs_filt = phs*filt*win
+    
+    #Zero pad phase history
+    N_fft = 2**(int(np.log2(nsamples*upsample))+1)
+    phs_pad = sig.pad(phs_filt, [npulses,N_fft])
+    
+    #Filter phase history and perform FT w.r.t t
+    Q = sig.ft(phs_pad)    
+    dr = np.linspace(-nsamples*delta_r/2, nsamples*delta_r/2, N_fft)
+    
+    #Perform backprojection for each pulse
+    img = np.zeros(nu*nv)+0j
+    for i in range(npulses):
+        if prnt:
+            print("Calculating backprojection for pulse %i" %i)
+        r0 = np.array([pos[i]]).T
+        dr_i = norm(r0)-norm(r-r0, axis = 0)
+    
+        Q_real = np.interp(dr_i, dr, Q[i].real)
+        Q_imag = np.interp(dr_i, dr, Q[i].imag)
+        
+        Q_hat = Q_real+1j*Q_imag        
+        img += Q_hat*np.exp(-1j*k_c*dr_i)
+    
+    r0 = np.array([pos[npulses/2]]).T
+    dr_i = norm(r0)-norm(r-r0, axis = 0)
+    img = img*np.exp(-1j*k_c*dr_i)   
+    img = np.reshape(img, [nv, nu])[::-1,:]
+    return(img)
+
+def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, ftype = 'iir', V = 'large'):
+##############################################################################
+#                                                                            #
+#  This is the Digital Spotlight Backprojection algorithm based on K. Dungan #
+#  et. al.'s 2013 SPIE paper.  In addition to the normal arguments used for  #
+#  the backprojection algorithm, DSBP also requires the "center and "size"   #
+#  arguments.  The "center" argument is the 3D vector (in meters) that       #
+#  points to the new scene center using the old scene center as the origin.  #
+#  The "size" argument is a 2 element array.  Each element describes the     #
+#  extent of the digitally spotlighted scene, in units of img_plane pixels,  #
+#  along azimuth and range, respectively.  The elements of size are assumed  #
+#  to be even numbers.                                                       #
+#                                                                            #
+##############################################################################
+
+    #Retrieve relevent parameters
+    c           =   299792458.0
+    pos         =   platform['pos']
+    freq        =   platform['freq']
+    u           =   img_plane['u']
+    u_hat       =   img_plane['u_hat']
+    v           =   img_plane['v']
+    v_hat       =   img_plane['v_hat']
+    du          =   img_plane['du']
+    dv          =   img_plane['dv']   
+    
+    #Derive parameters
+    Vx = size[1]*du
+    Vy = size[0]*dv
+    phs = phsTools.reMoComp(phs, platform, center)
+    pos = pos-center
+    
+    phsDS       = phs
+    platformDS  = dict(platform)
+    img_planeDS = dict(img_plane)
+    
+    #calculate decimation factor along range
+    deltaF = abs(np.mean(np.diff(freq)))
+    deltaFspot = c/(2*derate*norm([Vx, Vy]))
+    N = int(np.floor(deltaFspot/deltaF))
+    if N==0:
+        N+=1
+    
+    #decimate frequencies and phase history
+    freq = decimate(freq, N, ftype = ftype)
+    phsDS = decimate(phsDS, N, ftype = ftype)
+    
+    #update platform
+    platformDS['nsamples'] = freq.size
+    deltaF = freq[-1]-freq[-2] #Assume sample spacing can be determined by difference between last two values (first two are distorted by decimation filter)
+    freq   = freq[-1]-np.arange(platformDS['nsamples'],0,-1)*deltaF
+    
+    #interpolate phs and pos using uniform azimuth spacing
+    sph = sig.cart2sph(pos)
+    sph[:,0] = np.unwrap(sph[:,0])
+    RPP = sph[1:,0]-sph[:-1,0]
+    abs_RPP = abs(RPP)
+    I = np.argsort(abs_RPP); sort_RPP = abs_RPP[I]
+    im = I[4]; RPPdata = sort_RPP[4]
+    
+    sph_i = np.zeros(sph.shape)
+    sph_i[:,0] = np.arange(sph[0,0], sph[-1,0], RPP[im])
+    sph_i[:,1] = np.interp(sph_i[:,0], sph[:,0], sph[:,1])
+    sph_i[:,2] = np.interp(sph_i[:,0], sph[:,0], sph[:,2])
+    phsDS = interp1d(sph[:,0], phsDS, axis = 0)(sph_i[:,0])
+    
+    sph = sph_i
+    pos = sig.sph2cart(sph)
+    
+    #decimate slowtime positions and phase history
+    fmax = freq[-1]
+    PPRspot = derate*2*norm([Vx, Vy])*fmax*np.cos(sph[:,1].min())/c
+    PPRdata = 1.0/RPPdata
+    M = int(np.floor(PPRdata/PPRspot))
+    if M==0:
+        M+=1
+    
+    FilterScale = np.array([decimate(np.ones(sph.shape[0]), M, ftype = ftype)]).T
+    phsDS = decimate(phsDS, M, ftype = ftype, axis=0)/FilterScale
+    sph = decimate(sph, M, ftype = ftype, axis=0)/FilterScale
+    
+    platformDS['npulses'] = int(phsDS.shape[0])
+    platformDS['pos']     = sig.sph2cart(sph)
+    
+    #Update platform
+    platformDS['k_r']     = 4*pi*freq/c
+    platformDS['delta_r'] = c/(2*(freq.max()-freq.min()))
+    
+    #Update img_plane
+    if V == 'large':
+        uDS = decimate(u,N,ftype = ftype)
+        vDS = decimate(v,M,ftype = ftype)
+        
+        du = uDS[-1]-uDS[-2]
+        dv = vDS[-1]-vDS[-2]
+        
+    u = np.arange(-size[1]/2,size[1]/2)*du
+    v = np.arange(-size[0]/2,size[0]/2)*dv
+    
+    [uu,vv] = np.meshgrid(u,v)
+    uu = uu.flatten(); vv = vv.flatten()
+    
+    A = np.asmatrix(np.hstack((
+        np.array([u_hat]).T, np.array([v_hat]).T 
+            )))            
+    b = np.asmatrix(np.vstack((uu,vv)))
+    pixel_locs = np.asarray(A*b)
+    
+    img_planeDS['u']              = u
+    img_planeDS['v']              = v
+    img_planeDS['pixel_locs']     = pixel_locs
+    
+    #Backproject using spotlighted data
+    img = backprojection(phsDS, platformDS, img_planeDS, taylor = taylor, prnt = False)
+    
+    return(img)
+    
     
 def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect = 0, upsample = True):
 ##############################################################################
@@ -647,7 +768,7 @@ def autoFocus2(img, win = 'auto', win_params = [100,0.5]):
                      
     return(img_af, af_ph)
     
-def imshow(img, dB_scale = [0,0]):
+def imshow(img, dB_scale = [0,0], extent = None):
 ###############################################################################
 #                                                                             #
 #  This program displays the processed data in dB.  The brightest point in    #
@@ -665,19 +786,19 @@ def imshow(img, dB_scale = [0,0]):
     
         #Display the image
         if dB_scale == [0,0]:
-            plt.imshow(img, cmap=cm.Greys_r)
+            plt.imshow(img, cmap=cm.Greys_r, extent = extent)
         else:
             plt.imshow(img, cmap=cm.Greys_r,
-                       vmin = dB_scale[0], vmax = dB_scale[-1])
+                       vmin = dB_scale[0], vmax = dB_scale[-1], extent = extent)
     
     #If the image is RGB                 
     else:
         #Display the image
         if dB_scale == [0,0]:
             img_RGB = (img-img.min())/(img.max()-img.min())
-            plt.imshow(img_RGB)
+            plt.imshow(img_RGB, extent = extent)
         else:
             img[img<=dB_scale[0]] = dB_scale[0]
             img[img>=dB_scale[-1]] = dB_scale[-1]
             img_RGB = (img-img.min())/(img.max()-img.min())
-            plt.imshow(img_RGB)
+            plt.imshow(img_RGB, extent = extent)

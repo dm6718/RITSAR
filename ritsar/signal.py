@@ -135,3 +135,23 @@ def pad(f, size):
                    mode = 'constant')
     
     return(f_pad)
+    
+def cart2sph(cart):
+    x = np.array([cart[:,0]]).T
+    y = np.array([cart[:,1]]).T
+    z = np.array([cart[:,2]]).T
+    azimuth = np.arctan2(y,x)
+    elevation = np.arctan2(z,np.sqrt(x**2 + y**2))
+    r = np.sqrt(x**2 + y**2 + z**2)
+    sph = np.hstack([azimuth, elevation, r])
+    return sph
+    
+def sph2cart(sph):
+    azimuth     = np.array([sph[:,0]]).T
+    elevation   = np.array([sph[:,1]]).T
+    r           = np.array([sph[:,2]]).T
+    x = r * np.cos(elevation) * np.cos(azimuth)
+    y = r * np.cos(elevation) * np.sin(azimuth)
+    z = r * np.sin(elevation)
+    cart = np.hstack([x,y,z])
+    return cart

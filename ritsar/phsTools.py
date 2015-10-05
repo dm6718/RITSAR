@@ -109,3 +109,27 @@ def phs_to_const_ref(phs, platform, upchirp = 1):
     phs = phs*exp(sgn*1j*4*pi*gamma/c*(f0/gamma+t)*DR)
                      
     return(phs)
+    
+def reMoComp(phs, platform, center = np.array([0,0,0])):
+##############################################################################
+#                                                                            #
+#  This is the re-motion compensation algorithm.  It re-motion compensates   #
+#  the phase history to a new scene center.  The "center" argument is the    #
+#  3D vector (in meters) that points to the new scene center using the old   #
+#  scene center as the origin.                                               #
+#                                                                            #
+##############################################################################
+    
+    #Retrieve relevent parameters
+    k_r         =   platform['k_r']
+    pos         =   platform['pos']
+    
+    R0 = np.array([norm(pos, axis = -1)]).T
+    RC = np.array([norm(pos-center, axis = -1)]).T
+    dr = R0-RC
+    remocomp = np.exp(-1j*k_r*dr)
+    
+    phs = phs*remocomp
+    
+    
+    return(phs)
