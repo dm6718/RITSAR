@@ -397,7 +397,7 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     im = I[4]; RPPdata = sort_RPP[4]
     
     sph_i = np.zeros(sph.shape)
-    sph_i[:,0] = np.arange(sph[0,0], sph[-1,0], RPP[im])
+    sph_i[:,0] = np.linspace(sph[0,0], sph[-1,0], sph.shape[0])
     sph_i[:,1] = np.interp(sph_i[:,0], sph[:,0], sph[:,1])
     sph_i[:,2] = np.interp(sph_i[:,0], sph[:,0], sph[:,2])
     phsDS = interp1d(sph[:,0], phsDS, axis = 0)(sph_i[:,0])
