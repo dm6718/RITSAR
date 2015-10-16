@@ -385,6 +385,7 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     platformDS['nsamples'] = freq.size
     deltaF = freq[-1]-freq[-2] #Assume sample spacing can be determined by difference between last two values (first two are distorted by decimation filter)
     freq   = freq[-1]-np.arange(platformDS['nsamples'],0,-1)*deltaF
+    platformDS['k_r'] = 4*pi*freq/c
     
     #interpolate phs and pos using uniform azimuth spacing
     sph = sig.cart2sph(pos)
