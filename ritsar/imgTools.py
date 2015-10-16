@@ -336,7 +336,7 @@ def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6, prnt = T
     img = np.reshape(img, [nv, nu])[::-1,:]
     return(img)
 
-def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, ftype = 'iir', V = 'large'):
+def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, ftype = 'iir'):
 ##############################################################################
 #                                                                            #
 #  This is the Digital Spotlight Backprojection algorithm based on K. Dungan #
@@ -356,9 +356,7 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     pos         =   platform['pos']
     freq        =   platform['freq']
     u           =   img_plane['u']
-    u_hat       =   img_plane['u_hat']
     v           =   img_plane['v']
-    v_hat       =   img_plane['v_hat']
     du          =   img_plane['du']
     dv          =   img_plane['dv']   
     
@@ -394,7 +392,7 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     RPP = sph[1:,0]-sph[:-1,0]
     abs_RPP = abs(RPP)
     I = np.argsort(abs_RPP); sort_RPP = abs_RPP[I]
-    im = I[4]; RPPdata = sort_RPP[4]
+    RPPdata = sort_RPP[4]
     
     sph_i = np.zeros(sph.shape)
     sph_i[:,0] = np.linspace(sph[0,0], sph[-1,0], sph.shape[0])
@@ -421,32 +419,21 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     platformDS['pos']     = sig.sph2cart(sph)
     
     #Update platform
-    platformDS['k_r']     = 4*pi*freq/c
-    platformDS['delta_r'] = c/(2*(freq.max()-freq.min()))
+    #Find cordinates of center pixel
+    p = img_plane['pixel_locs'].T
+    center_index = np.argsort(norm(p-center, axis = -1))[0]
+    center_index = np.array(np.unravel_index(center_index, [v.size, u.size]))
     
-    #Update img_plane
-    if V == 'large':
-        uDS = decimate(u,N,ftype = ftype)
-        vDS = decimate(v,M,ftype = ftype)
-        
-        du = uDS[-1]-uDS[-2]
-        dv = vDS[-1]-vDS[-2]
-        
-    u = np.arange(-size[1]/2,size[1]/2)*du
-    v = np.arange(-size[0]/2,size[0]/2)*dv
+    #Update u and v
+    img_planeDS['u']    = np.arange(-size[1]/2,size[1]/2)*du
+    img_planeDS['v']    = np.arange(-size[0]/2,size[0]/2)*dv
     
-    [uu,vv] = np.meshgrid(u,v)
-    uu = uu.flatten(); vv = vv.flatten()
-    
-    A = np.asmatrix(np.hstack((
-        np.array([u_hat]).T, np.array([v_hat]).T 
-            )))            
-    b = np.asmatrix(np.vstack((uu,vv)))
-    pixel_locs = np.asarray(A*b)
-    
-    img_planeDS['u']              = u
-    img_planeDS['v']              = v
-    img_planeDS['pixel_locs']     = pixel_locs
+    #get pixel locs for sub_image
+    u_index = np.arange(center_index[1]-size[1]/2,center_index[1]+size[1]/2)
+    v_index = np.arange(center_index[0]-size[0]/2,center_index[0]+size[0]/2)
+    uu,vv = np.meshgrid(u_index,v_index)
+    locs_index = np.ravel_multi_index((vv.flatten(),uu.flatten()),(v.size,u.size))
+    img_planeDS['pixel_locs']     = img_plane['pixel_locs'][:,locs_index]-np.array([center]).T
     
     #Backproject using spotlighted data
     img = backprojection(phsDS, platformDS, img_planeDS, taylor = taylor, prnt = False)
