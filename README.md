@@ -12,7 +12,7 @@ $ cd \<ritsar_dir\>
 
 $ python setup.py install
 
-then
+then...
 
 $ cd ./examples
 
