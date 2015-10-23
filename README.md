@@ -6,7 +6,13 @@ Before installation, please make sure you have the following:
 - OpenCV. If using the omega-k algorithm, OpenCV is required. Instructions for installing OpenCV for Python can be found at  https://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html#py-table-of-content-setup.
 - Spectral.  Needed to interface with .envi files.  Can be downloaded here: http://www.spectralpython.net/ 
   
-To get started, download the zip file and extract it to a directory that will from here on be referred to as \<ritsar_dir\>.  Open up a command line or terminal and type:
+To get started, first make sure your SciPy and NumPy libraries are up-to-date.  With Anaconda, this can be done by running
+
+$ conda update conda
+
+$ conda update anaconda
+
+Once you've ensured the required libraries are up-to-date, download the zip file and extract it to a directory that will from here on be referred to as \<ritsar_dir\>.  Open up a command line or terminal and type:
 
 $ cd \<ritsar_dir\>
 
