@@ -53,12 +53,12 @@ if __name__ == '__main__':
     
     #Fast-factorized backprojection without multi-processing
     start = time()
-    img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 2)
+    img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 4)
     fbp_time = time()-start
     
     #Fast-factorized backprojection with multi-processing
     start = time()
-    img_FFBP = imgTools.FFBPmp(phs, platform, img_plane, taylor = 17, factor_max = 2)
+    img_FFBP = imgTools.FFBPmp(phs, platform, img_plane, taylor = 17, factor_max = 4)
     fbpmp_time = time()-start
     
     #Output image
@@ -159,12 +159,12 @@ if __name__ == '__main__':
     
     #Fast-factorized backprojection without multi-processing
     start = time()
-    img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 2)
+    img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 4)
     fbp_time = time()-start
     
     #Fast-factorized backprojection with multi-processing
     start = time()
-    img_FFBP = imgTools.FFBPmp(phs, platform, img_plane, taylor = 17, factor_max = 2)
+    img_FFBP = imgTools.FFBPmp(phs, platform, img_plane, taylor = 17, factor_max = 4)
     fbpmp_time = time()-start
     
     #Output image
