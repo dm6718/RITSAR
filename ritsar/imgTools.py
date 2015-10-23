@@ -18,7 +18,7 @@ def phs_inscribe(img):
 #  corner points are output.  OpenCV is required.                            #
 #                                                                            #
 ##############################################################################
-	import cv2
+    import cv2
     
     #Define behavior for mouse callback function
     def onMouse(event,x,y, flags, param):

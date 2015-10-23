@@ -293,7 +293,7 @@ def getWildcard(directory, char):
     return(fname)
 
 def DIRSIG(directory):
-	from spectral.io import envi
+    from spectral.io import envi
     
     #get phase history
     phs_fname = getWildcard(directory, '*.hdr')
