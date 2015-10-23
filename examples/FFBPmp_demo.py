@@ -72,7 +72,7 @@ if __name__ == '__main__':
     plt.xlabel('meters'); plt.ylabel('meters')
     
     plt.subplot(2,2,3)
-    plt.title('Fast Factorized Backprojection \n w/0 multi-processing \n \
+    plt.title('Fast Factorized Backprojection \n w/o multi-processing \n \
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     plt.xlabel('meters'); plt.ylabel('meters')
     
     plt.subplot(2,2,3)
-    plt.title('Fast Factorized Backprojection \n w/0 multi-processing \n \
+    plt.title('Fast Factorized Backprojection \n w/o multi-processing \n \
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-30,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
@@ -178,7 +178,7 @@ if __name__ == '__main__':
     plt.xlabel('meters'); plt.ylabel('meters')
     
     plt.subplot(2,2,3)
-    plt.title('Fast Factorized Backprojection \n w/0 multi-processing \n \
+    plt.title('Fast Factorized Backprojection \n w/o multi-processing \n \
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
