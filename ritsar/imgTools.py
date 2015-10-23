@@ -1,5 +1,4 @@
 #Include depedencies
-import cv2
 import numpy as np
 from numpy import dot, pi, exp, sqrt, inf
 from numpy.linalg import norm
@@ -19,7 +18,7 @@ def phs_inscribe(img):
 #  corner points are output.  OpenCV is required.                            #
 #                                                                            #
 ##############################################################################
-
+	import cv2
     
     #Define behavior for mouse callback function
     def onMouse(event,x,y, flags, param):

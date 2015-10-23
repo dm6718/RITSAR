@@ -6,7 +6,6 @@ from scipy.io import loadmat
 from scipy.stats import linregress
 from fnmatch import fnmatch
 import os
-from spectral.io import envi
 import xml.etree.ElementTree as ET
 
 def AFRL(directory, pol, start_az, n_az=3):
@@ -294,6 +293,7 @@ def getWildcard(directory, char):
     return(fname)
 
 def DIRSIG(directory):
+	from spectral.io import envi
     
     #get phase history
     phs_fname = getWildcard(directory, '*.hdr')
