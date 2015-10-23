@@ -12,7 +12,7 @@ $ conda update conda
 
 $ conda update anaconda
 
-from a terminal.  Once you've ensured the required libraries are up-to-date, download the zip file and extract it to a directory that from here on will be referred to as \<ritsar_dir\>.  Open up a command line or terminal and type:
+Once you've ensured the required libraries are up-to-date, download the zip file and extract it to a directory that from here on will be referred to as \<ritsar_dir\>.  Open up a command line or terminal and type:
 
 $ cd \<ritsar_dir\>
 
