@@ -362,6 +362,7 @@ This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al
 \end{itemize}
 
 \subsection{FFBP(phs, platform, img\_plane, N, derate, taylor, n, beta, cutoff, factor\_max, factor\_min)}
+\label{sec:FFBP}
 This is the Fast Factorized Backprojection Algorithm.  Factorization at each level of recursion is handled by the Digital Spotlight algorithm based on K. Dungan et. al.'s 2013 SPIE paper.  This algorithm is intended to work with image sizes that are a factor of 2.  The size of the phase can be arbitrary - the AFRL digital spotlight agorithm will automatically determine the optimal factorization factor.  Alternatively, the user can specify the maximum and minimum default factorization factor at each stage of recursion with the parameters factor\_max and factor\_min respectively.  Performance can be increased by decreasing the order of the interpolation window (n) or increasing factor\_min.  Image fidelity can be increased by increasing the order of the interpolation window or reducing factor\_max.\\
 
 \noindent \underline{\textbf{Parameters}}:
@@ -414,6 +415,11 @@ This is the Fast Factorized Backprojection Algorithm.  Factorization at each lev
 	\item \defs{img}{complex array [npulses x nsamples]}\\
 	processed image
 \end{itemize}
+
+\subsection{FFBPmp(phs, platform, img\_plane, N, derate, taylor, n, beta, cutoff, factor\_max, factor\_min)}
+This is the Fast Factorized Backprojection Algorithm with multi-processing.  Processing begins with breaking the image up into 4 sub images using the digital spotlight algorithm and forcing the factorization factor to 1.  The multiprocessing library is then used to create 4 processes.  For each process, the sub images are generated using the factorized backprojection algorithm.  It is extremely import that this function is only run from a .py script and the first line of that script contains the statement: if \_\_name\_\_ == ``\_\_main\_\_'': immediately after all import statements.  Reference the FFBPmp demo for more details.  The arguments for this function are exactly the same as for regular \hyperref[sec:FFBP]{FFBP}.
+
+\newpage
 
 \subsection{img\_plane\_dict(platform, res\_factor, n\_hat, aspect, upsample)}
 \label{sec:img_dict}

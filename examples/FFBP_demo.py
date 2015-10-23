@@ -49,6 +49,7 @@ start = time()
 img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
 bp_time = time()-start
 
+#Fast-factorized backprojection
 start = time()
 img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 4)
 fbp_time = time()-start
@@ -90,6 +91,7 @@ start = time()
 img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
 bp_time = time()-start
 
+#Fast-factorized backprojection
 start = time()
 img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 2)
 fbp_time = time()-start
@@ -130,6 +132,7 @@ start = time()
 img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
 bp_time = time()-start
 
+#Fast-factorized backprojection
 start = time()
 img_FFBP = imgTools.FFBP(phs, platform, img_plane, factor_max = 4)
 fbp_time = time()-start
