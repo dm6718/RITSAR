@@ -15,9 +15,10 @@ $ python setup.py install
 then
 
 $ cd ./examples
+
 $ ipython
 
-from the ipython console, type:
+From the ipython console, type:
 
 In [1]: %run FFBP_demo
 
