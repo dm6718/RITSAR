@@ -20,9 +20,9 @@ $ ipython
 
 From the ipython console, type:
 
-In [1]: %matplotlib qt
+In [1]: import matplotlib.pylab as plt
 
-In [2]: %run FFBP_demo
+In [2]: %run FFBP_demo ;plt.show()
 
 or any other demo that you would like to run.  Alternatively, you can open up the demos in an IDE of your choice to experiment with the different options available.
 
