@@ -30,8 +30,6 @@ Current capabilities include modeling the phase history for a collection of poin
 
 Future capabilities may include using the python multiprocessing toolbox for the fast-factorized backprojection algorithm.
 
-To install, first download and unzip the repository.  Then from the command line, go to the unzipped directory and type "python setup.py install".  To uninstall, simply remove the ritsar directory.  This can be done by "rm -rf /(Python Directory)/Libs/site-packages/ritsar" for an anaconda distribution of python.
-
 Data included with this toolset includes a small subset of the AFRL Gotcha data provided by AFRL/SNA.  The full data set can be downloaded separately from https://www.sdms.afrl.af.mil/index.php?collection=gotcha after user registration.  Also included is a single dataset from Sandia National Labs.
 
 If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu. Ideas on how to incorporate a GUI would be greatly appreciated.
