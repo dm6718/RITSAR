@@ -305,8 +305,8 @@ This is the Backprojection algorithm.  The phase history data as well as platfor
 
 \newpage
 
-\subsection{DSBP(phs, platform, img\_plane, center, size, derate, taylor, ftype, V)}
-This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al.'s 2013 SPIE paper \cite{spotlight}.  In addition to the normal arguments used for the backprojection algorithm, DSBP also requires the "center and "size" arguments.  The "center" argument is the 3D vector (in meters) that points to the new scene center using the old scene center as the origin. The "size" argument is a 2 element array.  Each element describes the  extent of the digitally spotlighted scene, in units of img\_plane pixels, along azimuth and range, respectively.  The elements of size are assumed to be even numbers.\\
+\subsection{DSBP(phs, platform, img\_plane, center, size, derate, taylor, n, beta, cutoff, factor\_max, factor\_min)}
+This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al.'s 2013 SPIE paper \cite{spotlight}.\\
 
 \noindent \underline{\textbf{Parameters}}:
 
@@ -328,10 +328,6 @@ This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al
 	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
 	    \item \defs{v}{float array [len(v)]}\\
 	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
-		\item \defs{u\_hat}{float array [3]}\\
-	    	unit vector for u.  Defined to lie along the slant range vector, projected onto the image plane.
-		\item \defs{v\_hat}{float array [3]}\\
-	    	unit vector for v.  Defined to lie perpendicular to the slant range vector in the image plane.
 		\item \defs{du}{float array [len(u)]}\\
 	    	pixel spacing in range direction
 		\item \defs{dv}{float array [len(v)]}\\
@@ -340,17 +336,77 @@ This is the Digital Spotlight Backprojection algorithm based on K. Dungan et. al
 	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
 	\end{itemize}
 	\item\defs{center}{float array[3]}\\
-	vector (in meters) that points to the new scene center using the old scene center as the origin
+	vector (in meters) that points to the new scene center using the old scene center as the origin.  If this is not given, the center is taken to be the mean of the pixel\_locs array
 	\item\defs{size}{int array[2]}\\
-	describes the extent of the digitally spotlighted scene, in units of img\_plane pixels, along azimuth and range, respectively
+	describes the extent of the digitally spotlighted scene, in units of img\_plane pixels, along azimuth and range, respectively.  If this is not given, size is assumed to match that of the img\_plane
 	\item\defs{derate}{float}\\
 	amount by which to increase spot size. default is 1.05
 	\item\defs{taylor}{int}\\
 	attenuation factor for taylor window in dB.  defaults to 43 dB.
-	\item\defs{ftype}{string}\\
-	type of filter to use for decimation.  Default is 'iir' and is recommended for large scenes.  'fir' can also be chosen and is recommended fro relatively smaller scenes.
-	\item\defs{V}{string}\\
-	Describes if the spotlighted scene is large or small.  The default is 'large', which optimizes the output grid for spotlighted scenes that are a large fraction of the original scene.  If V is set to small (or anything other than 'large'), an output grid optimized for small scenes is created.
+	\item\defs{n}{int}\\
+	order of the filter (number of taps) for the low-pass FIR used in the decimation function
+	\item\defs{beta}{float}\\
+	shape factor for Kaiser the FIR window used in the decimation function.  Default is 4. A value of 5 approximates a Hamming window \cite{scipy_kaiser}
+	\item\defs{cutoff}{float}\\
+	cutoff frequency for FIR.  The default value is the Nyquist frequency.  The value is specified with respect to Nyquist, with Nyquist being 1.0.  For example, if you want an 80\% passband FIR, set cutoff to 0.8.
+	\item\defs{factor\_max}{int}\\
+	maximum factorization factor than can be used
+	\item\defs{factor\_min}{int}\\
+	minimum factorization factor
+\end{itemize}
+
+\noindent \underline{\textbf{Returns}}:
+\begin{itemize}
+	\item \defs{img}{complex array [npulses x nsamples]}\\
+	processed image
+\end{itemize}
+
+\subsection{FFBP(phs, platform, img\_plane, N, derate, taylor, n, beta, cutoff, factor\_max, factor\_min)}
+This is the Fast Factorized Backprojection Algorithm.  Factorization at each level of recursion is handled by the Digital Spotlight algorithm based on K. Dungan et. al.'s 2013 SPIE paper.  This algorithm is intended to work with image sizes that are a factor of 2.  The size of the phase can be arbitrary - the AFRL digital spotlight agorithm will automatically determine the optimal factorization factor.  Alternatively, the user can specify the maximum and minimum default factorization factor at each stage of recursion with the parameters factor\_max and factor\_min respectively.  Performance can be increased by decreasing the order of the interpolation window (n) or increasing factor\_min.  Image fidelity can be increased by increasing the order of the interpolation window or reducing factor\_max.\\
+
+\noindent \underline{\textbf{Parameters}}:
+
+\begin{itemize}
+	\item \defs{phs}{complex array [npulses x nsamples]}\\
+  	complex phase history
+  	\item \defs{platform}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{pos}{float array [npulses x 3]}\\
+	       	(x,y,z) coordinates of platform, referenced to scene center, which is located at (0,0,0)
+		\item\defs{freq}{float array [nsamples]}\\
+	    	temporal frequencies corresponding to each fast time return.  For a linear FM signal, this is given by $(f_0+chirprate\times t)$
+	\end{itemize}
+  	\item \defs{img\_plane}{dictionary}\\
+  	dictionary that has the following keys defined:
+	\begin{itemize}
+	    \item \defs{u}{float array [len(u)]}\\
+	    	for the backprojection algorithm, u is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of u matters, not its contents.
+	    \item \defs{v}{float array [len(v)]}\\
+	    	for the backprojection algorithm, v is essentially a placeholder that defines one of the dimmensions of the output image.  Only the length of v matters, not its contents.
+		\item \defs{du}{float array [len(u)]}\\
+	    	pixel spacing in range direction
+		\item \defs{dv}{float array [len(v)]}\\
+	    	pixel spacing in cross-range direction
+	    \item \defs{pixel\_locs}{float array [3 x n\_pixels]}\\
+	    	flattened array specifying the 3-dimensional location of each pixel in the rectangular output array whose shape is [len(u) x len(v)].  Consequently, $n\_pixels = len(u) \times len(v)$.  The locations do not have to lie in a plane and can be specified to an arbitrary surface that matches the local terrain.  A rectangular output array with the location of each pixel specified is the only constraint.
+	\end{itemize}
+	\item\defs{N}{int}\\
+	number of factorization steps.  Default is 3
+	\item\defs{derate}{float}\\
+	amount by which to increase spot size. default is 1.05
+	\item\defs{taylor}{int}\\
+	attenuation factor for taylor window in dB.  defaults to 43 dB.
+	\item\defs{n}{int}\\
+	order of the filter (number of taps) for the low-pass FIR used in the decimation function
+	\item\defs{beta}{float}\\
+	shape factor for the Kaiser FIR window used in the decimation function.  Default is 4. A value of 5 approximates a Hamming window \cite{scipy_kaiser}
+	\item\defs{cutoff}{float}\\
+	cutoff frequency for FIR.  The default value is the Nyquist frequency.  The value is specified with respect to Nyquist, with Nyquist being 1.0.  For example, if you want an 80\% passband FIR, set cutoff to 0.8.
+	\item\defs{factor\_max}{int}\\
+	maximum factorization factor than can be used
+	\item\defs{factor\_min}{int}\\
+	minimum factorization factor
 \end{itemize}
 
 \noindent \underline{\textbf{Returns}}:

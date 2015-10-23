@@ -383,7 +383,7 @@ def DIRSIG(directory):
     platform = \
     {
         'f_0'       :   f_0,
-        'freq'      :   freq*2,
+        'freq'      :   freq,
         'chirprate' :   chirprate,
         'B'         :   B,
         'B_IF'      :   B_IF,

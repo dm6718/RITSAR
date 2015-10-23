@@ -1,6 +1,6 @@
 ##############################################################################
 #                                                                            #
-#  This is a demonstration of the Digital Spotlight Backprojection algorithm.#
+#  This is a demonstration of the Fast Factorized Backprojection algorithm.  #
 #  Data sets can be switched in and out by commenting/uncommenting the lines #
 #  of code below.                                                            #
 #                                                                            #
@@ -16,54 +16,57 @@ from SARplatform import plat_dict
 
 #Include standard library dependencies
 import matplotlib.pylab as plt
-import numpy as np
+from time import time
 
 #Include SARIT toolset
 from ritsar import phsTools
 from ritsar import phsRead
 from ritsar import imgTools
 '''
-#simulated DSBP demo
+#simulated FFBP demo
 ##############################################################################
 #Create platform dictionary
 platform = plat_dict()
 
 #Create image plane dictionary
-img_plane = imgTools.img_plane_dict(platform, aspect = 1)
+img_plane = imgTools.img_plane_dict(platform, aspect = 1, res_factor=0.9)
 
 #Simulate phase history
 nsamples = platform['nsamples']
 npulses = platform['npulses']
 x = img_plane['u']; y = img_plane['v']
 points = [[0,0,0],
-          [0,-100,0],
-          [200,0,0]]
+          [200,0,0],
+          [0,100,0]]
 amplitudes = [1,1,1]
 phs = phsTools.simulate_phs(platform, points, amplitudes)
 
 #Apply RVP correction
-phs_corr = phsTools.RVP_correct(phs, platform)
+phs = phsTools.RVP_correct(phs, platform)
 
-#Apply algorithm of choice to phase history data
-img_bp   = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 17, upsample = 2)
-N = 1000
-img_DSBP = imgTools.DSBP(phs_corr, platform, img_plane, center = [200,0,0], size = [N,N], n=8)
+#full backprojection
+start = time()
+img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
+bp_time = time()-start
+
+start = time()
+img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 4)
+fbp_time = time()-start
 
 #Output image
-du = img_plane['du']; dv = img_plane['dv']
-#u = img_plane['u']; v = img_plane['v']
-u = np.arange(-N/2,N/2)*du
-v = np.arange(-N/2,N/2)*dv
+u = img_plane['u']; v = img_plane['v']
 extent = [u.min(), u.max(), v.min(), v.max()]
 
 plt.subplot(1,2,1)
-plt.title('Full Backprojection')
-imgTools.imshow(img_bp[1024-N/2:1024+N/2, 1315-N/2:1315+N/2], dB_scale = [-25,0], extent = extent)
+plt.title('Full Backprojection \n \
+Runtime = %i s'%bp_time)
+imgTools.imshow(img_bp, dB_scale = [-25,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 
 plt.subplot(1,2,2)
-plt.title('Digital Spotlight Backprojection')
-imgTools.imshow(img_DSBP, dB_scale = [-25,0], extent = extent)
+plt.title('Fast Factorized Backprojection \n \
+Runtime = %i s'%fbp_time)
+imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 plt.tight_layout()
 
@@ -77,31 +80,34 @@ directory = './data/AFRL/pass1'
 start_az = 1
 
 #Import phase history and create platform dictionary
-[phs, platform] = phsRead.AFRL(directory, pol, start_az, n_az = 3)
+[phs, platform] = phsRead.AFRL(directory, pol, start_az, n_az = 4)
 
 #Create image plane dictionary
-img_plane = imgTools.img_plane_dict(platform, res_factor = 1.4, upsample = True, aspect = 1.0)
+img_plane = imgTools.img_plane_dict(platform, res_factor = 1.0, upsample = True, aspect = 1.0)
 
-#Apply algorithm of choice to phase history data
+#full backprojection
+start = time()
 img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
-N = 128
-img_DSBP = imgTools.DSBP(phs, platform, img_plane, center = [-15-0.6,22-0.4,0], size = [N,N])
+bp_time = time()-start
+
+start = time()
+img_FFBP = imgTools.FFBP(phs, platform, img_plane, taylor = 17, factor_max = 2)
+fbp_time = time()-start
 
 #Output image
-du = img_plane['du']; dv = img_plane['dv']
-#u = img_plane['u']; v = img_plane['v']
-u = np.arange(-N/2,N/2)*du
-v = np.arange(-N/2,N/2)*dv
+u = img_plane['u']; v = img_plane['v']
 extent = [u.min(), u.max(), v.min(), v.max()]
 
 plt.subplot(1,2,1)
-plt.title('Full Backprojection')
-imgTools.imshow(img_bp[177-N/2:177+N/2,202-N/2:202+N/2], dB_scale = [-25,0], extent = extent)
+plt.title('Full Backprojection \n \
+Runtime = %i s'%bp_time)
+imgTools.imshow(img_bp, dB_scale = [-30,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 
 plt.subplot(1,2,2)
-plt.title('Digital Spotlight Backprojection')
-imgTools.imshow(img_DSBP, dB_scale = [-25,0], extent = extent)
+plt.title('Fast Factorized Backprojection \n \
+Runtime = %i s'%fbp_time)
+imgTools.imshow(img_FFBP, dB_scale = [-30,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 plt.tight_layout()
 '''
@@ -119,24 +125,28 @@ phs_corr = phsTools.RVP_correct(phs, platform)
 #Import image plane dictionary from './parameters/img_plane'
 img_plane = imgTools.img_plane_dict(platform, res_factor = 1.0, aspect = 1.0)
 
-#Apply algorithm of choice to phase history data
-img_bp   = imgTools.backprojection(phs_corr, platform, img_plane, taylor = 17, upsample = 2)
-img_DSBP = imgTools.DSBP(phs_corr, platform, img_plane, center = [0,0,0], size = [300,300])
+#full backprojection
+start = time()
+img_bp   = imgTools.backprojection(phs, platform, img_plane, taylor = 17, upsample = 2)
+bp_time = time()-start
+
+start = time()
+img_FFBP = imgTools.FFBP(phs, platform, img_plane, factor_max = 4)
+fbp_time = time()-start
 
 #Output image
-du = img_plane['du']; dv = img_plane['dv']
-#u = img_plane['u']; v = img_plane['v']
-u = np.arange(-300/2,300/2)*du
-v = np.arange(-300/2,300/2)*dv
+u = img_plane['u']; v = img_plane['v']
 extent = [u.min(), u.max(), v.min(), v.max()]
 
 plt.subplot(1,2,1)
-plt.title('Full Backprojection')
-imgTools.imshow(img_bp[512-150:512+150, 512-150:512+150], dB_scale = [-25,0], extent = extent)
+plt.title('Full Backprojection \n \
+Runtime = %i s'%bp_time)
+imgTools.imshow(img_bp, dB_scale = [-25,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 
 plt.subplot(1,2,2)
-plt.title('Digital Spotlight Backprojection')
-imgTools.imshow(img_DSBP, dB_scale = [-25,0], extent = extent)
+plt.title('Fast Factorized Backprojection \n \
+Runtime = %i s'%fbp_time)
+imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
 plt.xlabel('meters'); plt.ylabel('meters')
 plt.tight_layout()'''

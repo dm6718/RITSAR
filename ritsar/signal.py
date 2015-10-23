@@ -9,6 +9,7 @@
 import numpy as np
 from numpy import pi, arccosh, sqrt, cos
 from scipy.fftpack import fftshift, fft2, ifft2, fft, ifft
+from scipy.signal import firwin, filtfilt
 
 #all FT's assumed to be centered at the origin
 def ft(f, ax=-1):
@@ -155,3 +156,32 @@ def sph2cart(sph):
     z = r * np.sin(elevation)
     cart = np.hstack([x,y,z])
     return cart
+    
+def decimate(x, q, n=None, axis=-1, beta = None, cutoff = 'nyq'):
+    if not isinstance(q, int):
+        raise TypeError("q must be an integer")
+        
+    if n == None:
+        n = int(np.log2(x.shape[axis]))
+        
+    if x.shape[axis] < n:
+        n = x.shape[axis]-1
+    
+    if beta == None:
+        beta = 1.*n/8
+    
+    padlen = n/2
+    
+    if cutoff == 'nyq':
+        eps = np.finfo(np.float).eps
+        cutoff = 1.-eps
+    
+    window = ('kaiser', beta)
+    a = 1.
+    
+    b = firwin(n,  cutoff/ q, window=window)
+    y = filtfilt(b, [a], x, axis=axis, padlen = padlen)
+    
+    sl = [slice(None)] * y.ndim
+    sl[axis] = slice(None, None, q)
+    return y[sl]

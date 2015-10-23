@@ -336,18 +336,11 @@ def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6, prnt = T
     img = np.reshape(img, [nv, nu])[::-1,:]
     return(img)
 
-def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, ftype = 'iir'):
+def DSBP(phs, platform, img_plane, center=None, size=None, derate = 1.05, taylor = 20, n = 32, beta = 4, cutoff = 'nyq', factor_max = 6, factor_min = 0):
 ##############################################################################
 #                                                                            #
 #  This is the Digital Spotlight Backprojection algorithm based on K. Dungan #
-#  et. al.'s 2013 SPIE paper.  In addition to the normal arguments used for  #
-#  the backprojection algorithm, DSBP also requires the "center and "size"   #
-#  arguments.  The "center" argument is the 3D vector (in meters) that       #
-#  points to the new scene center using the old scene center as the origin.  #
-#  The "size" argument is a 2 element array.  Each element describes the     #
-#  extent of the digitally spotlighted scene, in units of img_plane pixels,  #
-#  along azimuth and range, respectively.  The elements of size are assumed  #
-#  to be even numbers.                                                       #
+#  et. al.'s 2013 SPIE paper.                                                #
 #                                                                            #
 ##############################################################################
 
@@ -358,13 +351,26 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     u           =   img_plane['u']
     v           =   img_plane['v']
     du          =   img_plane['du']
-    dv          =   img_plane['dv']   
+    dv          =   img_plane['dv']  
+    p           =   img_plane['pixel_locs']	
     
     #Derive parameters
-    Vx = size[1]*du
-    Vy = size[0]*dv
-    phs = phsTools.reMoComp(phs, platform, center)
-    pos = pos-center
+    if center == None:
+        empty_arg = True
+        size = [0,0];
+        size[1] = len(u)
+        size[0] = len(v)
+        Vx = u.max()-u.min()
+        Vy = v.max()-v.min()
+        center = np.mean(p, axis=-1)
+        phs = phsTools.reMoComp(phs, platform, center)
+        pos = pos-center
+    else:
+        empty_arg=False
+        Vx = size[1]*du
+        Vy = size[0]*dv
+        phs = phsTools.reMoComp(phs, platform, center)
+        pos = pos-center
     
     phsDS       = phs
     platformDS  = dict(platform)
@@ -374,72 +380,341 @@ def DSBP(phs, platform, img_plane, center, size, derate = 1.05, taylor = 20, fty
     deltaF = abs(np.mean(np.diff(freq)))
     deltaFspot = c/(2*derate*norm([Vx, Vy]))
     N = int(np.floor(deltaFspot/deltaF))
-    if N==0:
-        N+=1
     
+    #force the decimation factor if specified by the user
+    if N > factor_max:
+        N = factor_max
+    if N < factor_min:
+        N = factor_min
+
     #decimate frequencies and phase history
-    freq = decimate(freq, N, ftype = ftype)
-    phsDS = decimate(phsDS, N, ftype = ftype)
+    if N > 1:
+        freq = sig.decimate(freq, N, n = n, beta = beta, cutoff = cutoff)
+        phsDS = sig.decimate(phsDS, N, n = n, beta = beta, cutoff = cutoff)
     
     #update platform
     platformDS['nsamples'] = freq.size
-    deltaF = freq[-1]-freq[-2] #Assume sample spacing can be determined by difference between last two values (first two are distorted by decimation filter)
-    freq   = freq[-1]-np.arange(platformDS['nsamples'],0,-1)*deltaF
+    platformDS['freq']     = freq
+    deltaF = freq[freq.size/2]-freq[freq.size/2-1] #Assume sample spacing can be determined by difference between last two values (first two are distorted by decimation filter)
+    freq   = freq[freq.size/2]+np.arange(-freq.size/2,freq.size/2)*deltaF
     platformDS['k_r'] = 4*pi*freq/c
-    
+
     #interpolate phs and pos using uniform azimuth spacing
     sph = sig.cart2sph(pos)
     sph[:,0] = np.unwrap(sph[:,0])
     RPP = sph[1:,0]-sph[:-1,0]
     abs_RPP = abs(RPP)
     I = np.argsort(abs_RPP); sort_RPP = abs_RPP[I]
-    RPPdata = sort_RPP[4]
+    im=I[4]; RPPdata = sort_RPP[4]#len(I)/2
     
-    sph_i = np.zeros(sph.shape)
-    sph_i[:,0] = np.linspace(sph[0,0], sph[-1,0], sph.shape[0])
-    sph_i[:,1] = np.interp(sph_i[:,0], sph[:,0], sph[:,1])
-    sph_i[:,2] = np.interp(sph_i[:,0], sph[:,0], sph[:,2])
+    az_i = np.arange(sph[0,0], sph[-1,0], RPP[im])
+    sph_i = np.zeros([az_i.size, 3])
+    sph_i[:,0] = az_i
+    sph_i[:,1:3] = interp1d(sph[:,0], sph[:,1:3], axis = 0)(sph_i[:,0])
     phsDS = interp1d(sph[:,0], phsDS, axis = 0)(sph_i[:,0])
     
     sph = sph_i
     pos = sig.sph2cart(sph)
-    
+
     #decimate slowtime positions and phase history
     fmax = freq[-1]
     PPRspot = derate*2*norm([Vx, Vy])*fmax*np.cos(sph[:,1].min())/c
     PPRdata = 1.0/RPPdata
     M = int(np.floor(PPRdata/PPRspot))
-    if M==0:
-        M+=1
     
-    FilterScale = np.array([decimate(np.ones(sph.shape[0]), M, ftype = ftype)]).T
-    phsDS = decimate(phsDS, M, ftype = ftype, axis=0)/FilterScale
-    sph = decimate(sph, M, ftype = ftype, axis=0)/FilterScale
+    #force the decimation factor if specified by the user
+    if M > factor_max:
+        M = factor_max
+    if M < factor_min:
+        M = factor_min
+    
+    if M > 1:        
+        FilterScale = np.array([sig.decimate(np.ones(sph.shape[0]), M, n = n, beta = beta, cutoff = cutoff)]).T
+        phsDS = sig.decimate(phsDS, M, axis=0, n = n, beta = beta, cutoff = cutoff)/FilterScale
+        sph = sig.decimate(sph, M, axis=0, n = n, beta = beta, cutoff = cutoff)/FilterScale
     
     platformDS['npulses'] = int(phsDS.shape[0])
     platformDS['pos']     = sig.sph2cart(sph)
     
     #Update platform
-    #Find cordinates of center pixel
-    p = img_plane['pixel_locs'].T
-    center_index = np.argsort(norm(p-center, axis = -1))[0]
-    center_index = np.array(np.unravel_index(center_index, [v.size, u.size]))
-    
-    #Update u and v
-    img_planeDS['u']    = np.arange(-size[1]/2,size[1]/2)*du
-    img_planeDS['v']    = np.arange(-size[0]/2,size[0]/2)*dv
-    
-    #get pixel locs for sub_image
-    u_index = np.arange(center_index[1]-size[1]/2,center_index[1]+size[1]/2)
-    v_index = np.arange(center_index[0]-size[0]/2,center_index[0]+size[0]/2)
-    uu,vv = np.meshgrid(u_index,v_index)
-    locs_index = np.ravel_multi_index((vv.flatten(),uu.flatten()),(v.size,u.size))
-    img_planeDS['pixel_locs']     = img_plane['pixel_locs'][:,locs_index]-np.array([center]).T
+    if empty_arg:
+        img_planeDS['pixel_locs']     = p-np.array([center]).T
+    else:
+        #Find cordinates of center pixel
+        p = img_plane['pixel_locs'].T
+        center_index = np.argsort(norm(p-center, axis = -1))[0]
+        center_index = np.array(np.unravel_index(center_index, [v.size, u.size]))
+		
+        #Update u and v
+        img_planeDS['u']    = np.arange(-size[1]/2,size[1]/2)*du
+        img_planeDS['v']    = np.arange(-size[0]/2,size[0]/2)*dv
+		
+        #get pixel locs for sub_image
+        u_index = np.arange(center_index[1]-size[1]/2,center_index[1]+size[1]/2)
+        v_index = np.arange(center_index[0]-size[0]/2,center_index[0]+size[0]/2)
+        uu,vv = np.meshgrid(u_index,v_index)
+        locs_index = np.ravel_multi_index((vv.flatten(),uu.flatten()),(v.size,u.size))
+        img_planeDS['pixel_locs']     = img_plane['pixel_locs'][:,locs_index]-np.array([center]).T
     
     #Backproject using spotlighted data
     img = backprojection(phsDS, platformDS, img_planeDS, taylor = taylor, prnt = False)
     
     return(img)
+    
+def DS(phs, platform, img_plane, center=None, size=None, derate = 1.05, taylor = 20, n = 32, beta = 4, cutoff = 'nyq', factor_max = 6, factor_min = 0):
+##############################################################################
+#                                                                            #
+#  This is the Digital Spotlight algorithm based on K. Dungan et. al.'s      #
+#  2013 SPIE paper.  This is essentially the same as the DSBP algorithm,     #
+#  only it returns the digitally spotlighted phase history, platform object, #
+#  and img_plane object instead of the backprojected image.                  #
+#                                                                            #
+##############################################################################
+
+    #Retrieve relevent parameters
+    c           =   299792458.0
+    pos         =   platform['pos']
+    freq        =   platform['freq']
+    u           =   img_plane['u']
+    v           =   img_plane['v']
+    du          =   img_plane['du']
+    dv          =   img_plane['dv']  
+    p           =   img_plane['pixel_locs']	
+    
+    #Derive parameters
+    if center == None:
+        empty_arg = True
+        size = [0,0];
+        size[1] = len(u)
+        size[0] = len(v)
+        Vx = u.max()-u.min()
+        Vy = v.max()-v.min()
+        center = np.mean(p, axis=-1)
+        phs = phsTools.reMoComp(phs, platform, center)
+        pos = pos-center
+    else:
+        empty_arg=False
+        Vx = size[1]*du
+        Vy = size[0]*dv
+        phs = phsTools.reMoComp(phs, platform, center)
+        pos = pos-center
+    
+    phsDS       = phs
+    platformDS  = dict(platform)
+    img_planeDS = dict(img_plane)
+    
+    #calculate decimation factor along range
+    deltaF = abs(np.mean(np.diff(freq)))
+    deltaFspot = c/(2*derate*norm([Vx, Vy]))
+    N = int(np.floor(deltaFspot/deltaF))
+    
+    #force the decimation factor if specified by the user
+    if N > factor_max:
+        N = factor_max
+    if N < factor_min:
+        N = factor_min
+
+    #decimate frequencies and phase history
+    if N > 1:
+        freq = sig.decimate(freq, N, n = n, beta = beta, cutoff = cutoff)
+        phsDS = sig.decimate(phsDS, N, n = n, beta = beta, cutoff = cutoff)
+    
+    #update platform
+    platformDS['nsamples'] = freq.size
+    platformDS['freq']     = freq
+    deltaF = freq[freq.size/2]-freq[freq.size/2-1] #Assume sample spacing can be determined by difference between last two values (first two are distorted by decimation filter)
+    freq   = freq[freq.size/2]+np.arange(-freq.size/2,freq.size/2)*deltaF
+    platformDS['k_r'] = 4*pi*freq/c
+
+    #interpolate phs and pos using uniform azimuth spacing
+    sph = sig.cart2sph(pos)
+    sph[:,0] = np.unwrap(sph[:,0])
+    RPP = sph[1:,0]-sph[:-1,0]
+    abs_RPP = abs(RPP)
+    I = np.argsort(abs_RPP); sort_RPP = abs_RPP[I]
+    im=I[4]; RPPdata = sort_RPP[4]#len(I)/2
+    
+    az_i = np.arange(sph[0,0], sph[-1,0], RPP[im])
+    sph_i = np.zeros([az_i.size, 3])
+    sph_i[:,0] = az_i
+    sph_i[:,1:3] = interp1d(sph[:,0], sph[:,1:3], axis = 0)(sph_i[:,0])
+    phsDS = interp1d(sph[:,0], phsDS, axis = 0)(sph_i[:,0])
+    
+    sph = sph_i
+    pos = sig.sph2cart(sph)
+
+    #decimate slowtime positions and phase history
+    fmax = freq[-1]
+    PPRspot = derate*2*norm([Vx, Vy])*fmax*np.cos(sph[:,1].min())/c
+    PPRdata = 1.0/RPPdata
+    M = int(np.floor(PPRdata/PPRspot))
+    
+    #force the decimation factor if specified by the user
+    if M > factor_max:
+        M = factor_max
+    if M < factor_min:
+        M = factor_min
+    
+    if M > 1:        
+        FilterScale = np.array([sig.decimate(np.ones(sph.shape[0]), M, n = n, beta = beta, cutoff = cutoff)]).T
+        phsDS = sig.decimate(phsDS, M, axis=0, n = n, beta = beta, cutoff = cutoff)/FilterScale
+        sph = sig.decimate(sph, M, axis=0, n = n, beta = beta, cutoff = cutoff)/FilterScale
+    
+    platformDS['npulses'] = int(phsDS.shape[0])
+    platformDS['pos']     = sig.sph2cart(sph)
+    
+    #Update platform
+    if empty_arg:
+        img_planeDS['pixel_locs']     = p-np.array([center]).T
+    else:
+        #Find cordinates of center pixel
+        p = img_plane['pixel_locs'].T
+        center_index = np.argsort(norm(p-center, axis = -1))[0]
+        center_index = np.array(np.unravel_index(center_index, [v.size, u.size]))
+		
+        #Update u and v
+        img_planeDS['u']    = np.arange(-size[1]/2,size[1]/2)*du
+        img_planeDS['v']    = np.arange(-size[0]/2,size[0]/2)*dv
+		
+        #get pixel locs for sub_image
+        u_index = np.arange(center_index[1]-size[1]/2,center_index[1]+size[1]/2)
+        v_index = np.arange(center_index[0]-size[0]/2,center_index[0]+size[0]/2)
+        uu,vv = np.meshgrid(u_index,v_index)
+        locs_index = np.ravel_multi_index((vv.flatten(),uu.flatten()),(v.size,u.size))
+        img_planeDS['pixel_locs']     = img_plane['pixel_locs'][:,locs_index]-np.array([center]).T
+
+    return(phsDS, platformDS, img_planeDS)
+    
+def FFBP(phs, platform, img_plane, N=3, derate = 1.05, taylor = 20, n = 32, beta = 4, cutoff = 'nyq', factor_max = 2, factor_min = 0):
+##############################################################################
+#                                                                            #
+#  This is the Fast Factorized Backprojection Algorithm.  Factorization at   #
+#  each level of recursion is handled by the Digital Spotlight algorithm     #
+#  based on K. Dungan et. al.'s 2013 SPIE paper.  This algorithm is intended #
+#  to work with image sizes that are a factor of 2.  The size of the phase   #
+#  can be arbitrary - the AFRL digital spotlight agorithm will automatically #
+#  determine the optimal factorization factor.  Alternatively, the user can  #
+#  specify the maximum and minimum default factorization factor at each      #
+#  stage of recursion with the parameters factor_max and factor_min,         #
+#  respectively.  Performance can be increased by decreasing the order of    #
+#  the interpolation window (n) or increasing factor_min.  Image fidelity    #
+#  can be increased by increasing the order of the interpolation window or   #
+#  reducing factor_max.                                                      #
+#                                                                            #
+##############################################################################
+
+    #add sub_image_index key to img_plane
+    img_plane['index'] = np.array([0,0])
+        
+    #create parent containers
+    phsDS_list          = tuple([phs])
+    platformDS_list     = tuple([platform])
+    img_planeDS_list    = tuple([img_plane])
+    
+    #Begin factorization
+    for i in range(N):
+        print('processing recursion level %i of %i'%((i+1),N))
+        
+        #create temporary child containers
+        phsDS_list_tmp      = []
+        platformDS_list_tmp = []
+        img_planeDS_list_tmp= [];
+        
+        #Determine number of image patches    
+        n_img = 4**i
+        
+        image_number = 1
+        for j in range(n_img):
+            phsDS           =   phsDS_list[j]
+            platformDS      =   platformDS_list[j]
+            img_planeDS     =   img_planeDS_list[j]
+            
+            #Retrieve relevent parameters
+            u        = img_planeDS['u']
+            v        = img_planeDS['v']
+            pos      = img_planeDS['pixel_locs']
+            index    = img_planeDS['index']*2
+
+        
+            #Derive parameters
+            img_plane_sub = dict(img_planeDS)
+            full_size = np.array([v.size, u.size], dtype = np.int)
+            sub_size = np.array(full_size/2, dtype = int)
+            img_FFBP = np.zeros(full_size)
+        
+            #For each pixel, assign a position index
+            pos_array = np.arange(len(pos[0,]))
+            pos_array = np.reshape(pos_array, full_size)[::-1]
+        
+            #Break image into sub images (get sub_image indices)
+            img_FFBP = np.zeros(full_size)+0j
+            for k in range(2):
+                for l in range(2):
+                    print('digitally spotlighting sub-image %i of %i'
+                        %(image_number, n_img*4))
+                    
+                    #update img_plane['u','v']
+                    r = np.arange(sub_size[0]*k, sub_size[0]*(k+1))[::-1]
+                    c = np.arange(sub_size[1]*l, sub_size[1]*(l+1))
+                    img_plane_sub['u'] = u[c]
+                    img_plane_sub['v'] = v[r]
+                    cc,rr = np.meshgrid(c,r)
+                
+                    #Get pixel_locs for each sub image
+                    pos_index = pos_array[rr,cc].flatten()
+                    img_plane_sub['pixel_locs']=\
+                        pos[:,pos_index]
+                    
+                    #digitally spotlight data data
+                    tmp = DS(phsDS, platformDS, img_plane_sub,
+                        derate = derate, taylor=17, n = n, beta = beta, cutoff = cutoff, factor_max = factor_max, factor_min = factor_min)
+                        
+                    #update sub_image index
+                    tmp[2]['index'] = index + [k,l]
+                    
+                    phsDS_list_tmp.append(tmp[0])
+                    platformDS_list_tmp.append(tmp[1])
+                    img_planeDS_list_tmp.append(tmp[2])
+                    
+                    image_number+=1
+        
+        #replace parent containers with child containers
+        phsDS_list          = tuple(phsDS_list_tmp)
+        platformDS_list     = tuple(platformDS_list_tmp)
+        img_planeDS_list    = tuple(img_planeDS_list_tmp)
+        
+    #backproject factorized data
+    #####################################################
+    
+    #Retrieve relevent parameters
+    u        = img_plane['u']
+    v        = img_plane['v']
+    pos      = img_plane['pixel_locs']
+    
+    #Determine number of image patches
+    n_img = image_number-1
+    
+    #Derive parameters
+    full_size = np.array([v.size, u.size], dtype = np.int)
+    sub_size = np.array(full_size/(2**N), dtype = int)
+    img_FFBP = np.zeros(full_size)
+    
+    #Break image into sub images (get sub_image indices)
+    img_FFBP = np.zeros([v.size, u.size])+0j
+    for image_number in range(n_img):
+        print('creating sub-image %i of %i'%((image_number+1), n_img))
+        i,j = img_planeDS_list[image_number]['index']
+    
+        #update img_plane['u','v']
+        r = np.arange(sub_size[0]*i, sub_size[0]*(i+1))
+        c = np.arange(sub_size[1]*j, sub_size[1]*(j+1))
+        cc,rr = np.meshgrid(c,r)
+        
+        #Backproject using spotlighted data
+        img_FFBP[rr, cc] = backprojection(
+            phsDS_list[image_number], platformDS_list[image_number], img_planeDS_list[image_number], prnt=False)
+                
+    return(img_FFBP)
     
     
 def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect = 0, upsample = True):

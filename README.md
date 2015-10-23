@@ -6,14 +6,28 @@ Before installation, please make sure you have the following:
 - OpenCV. If using the omega-k algorithm, OpenCV is required. Instructions for installing OpenCV for Python can be found at  https://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_setup/py_table_of_contents_setup/py_table_of_contents_setup.html#py-table-of-content-setup.
 - Spectral.  Needed to interface with .envi files.  Can be downloaded here: http://www.spectralpython.net/ 
   
-To get started, run the demos in ./examples in a python or IPython console or your IDE of choice.  For sim_demo, feel free to adjust the parameters located in ./examples/dictionaries.
+To get started, download the zip file and extract it to a directory that will from here on be referred to as <ritsar_dir>.  Open up a command line or terminal and type:
 
-Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, omega-k, backprojection, and digitally spotlighted backprojection algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
+$ cd <ritsar_dir>
+$ python setup.py install
 
-Future capabilities may include factorized backprojection using digital spotlighting to form the sub-images.
+then
+
+$ cd ./examples
+$ ipython
+
+from the ipython console, type:
+
+In [1]:%run FFBP_demo
+
+or any other demo that you would like to run.  Alternatively, you can open up the demos in an IDE of your choice to experiment with the different options available.
+
+Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, omega-k, backprojection, digitally spotlighted backprojection, and fast-factorized backprojection algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
+
+Future capabilities may include using the python multiprocessing toolbox for the fast-factorized backprojection algorithm.
 
 To install, first download and unzip the repository.  Then from the command line, go to the unzipped directory and type "python setup.py install".  To uninstall, simply remove the ritsar directory.  This can be done by "rm -rf /(Python Directory)/Libs/site-packages/ritsar" for an anaconda distribution of python.
 
 Data included with this toolset includes a small subset of the AFRL Gotcha data provided by AFRL/SNA.  The full data set can be downloaded separately from https://www.sdms.afrl.af.mil/index.php?collection=gotcha after user registration.  Also included is a single dataset from Sandia National Labs.
 
-If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu. Ideas on how to incorporate a GUI would be greatly appreciated.  I would also be interested in adding a fast-factorized backprojection algorithm at some point.
+If anyone is interested in collaborating, I can be reached at dm6718@g.rit.edu. Ideas on how to incorporate a GUI would be greatly appreciated.
