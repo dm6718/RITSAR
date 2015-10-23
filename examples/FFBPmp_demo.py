@@ -68,20 +68,20 @@ if __name__ == '__main__':
     plt.subplot(2,1,1)
     plt.title('Full Backprojection \n \
     Runtime = %i s'%bp_time)
-    imgTools.imshow(img_bp, dB_scale = [-30,0], extent = extent)
+    imgTools.imshow(img_bp, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
     
     plt.subplot(2,2,3)
     plt.title('Fast Factorized Backprojection \n w/0 multi-processing \n \
     Runtime = %i s'%fbp_time)
-    imgTools.imshow(img_FFBP, dB_scale = [-30,0], extent = extent)
+    imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
     plt.tight_layout()
     
     plt.subplot(2,2,4)
     plt.title('Fast Factorized Backprojection \n w/ multi=processing \n \
     Runtime = %i s'%fbpmp_time)
-    imgTools.imshow(img_FFBP, dB_scale = [-30,0], extent = extent)
+    imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
     plt.tight_layout()    
     '''
