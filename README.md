@@ -16,17 +16,15 @@ then...
 
 $ cd ./examples
 
-$ ipython
+$ ipython --pylab
 
 From the ipython console, type:
 
-In [1]: import matplotlib.pylab as plt
+In [1]: %run FFBP_demo
 
-In [2]: %run FFBP_demo
+In [2]: import matplotlib.pylab as plt; plt.show()
 
-In [3]: plt.show()
-
-or any other demo that you would like to run.  Alternatively, you can open up the demos in an IDE of your choice to experiment with the different options available.
+or any run any other demo.  Alternatively, you can open up the demos in an IDE of your choice to experiment with the different options available.
 
 Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, omega-k, backprojection, digitally spotlighted backprojection, and fast-factorized backprojection algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
 
