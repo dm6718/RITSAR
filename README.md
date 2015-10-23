@@ -8,7 +8,7 @@ Before installation, please make sure you have the following:
   
 To get started, download the zip file and extract it to a directory that will from here on be referred to as <ritsar_dir>.  Open up a command line or terminal and type:
 
-$ cd \<ritsar_dir\>
+$ cd \<ritsar_dir\> \n
 $ python setup.py install
 
 then
