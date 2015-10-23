@@ -26,15 +26,13 @@ $ ipython --pylab
 
 From the ipython console, type:
 
-In [1]: %run FFBP_demo
+In [1]: %run FFBPmp_demo
 
 In [2]: import matplotlib.pylab as plt; plt.show()
 
 or run any other demo.  Alternatively, you can open up the demos in an IDE of your choice to experiment with the different options available.
 
-Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, omega-k, backprojection, digitally spotlighted backprojection, and fast-factorized backprojection algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
-
-Future capabilities may include using the python multiprocessing toolbox for the fast-factorized backprojection algorithm.
+Current capabilities include modeling the phase history for a collection of point targets as well as processing phase histories using the polar format, omega-k, backprojection, digitally spotlighted backprojection, fast-factorized backprojection, and fast-factorized backprojection with multi-processing algorithms.  Autofocusing can also be performed using the Phase Gradient Algorithm.  The current version can interface with AFRL Gotcha and DIRSIG data as well as a data set provided by Sandia.
 
 Data included with this toolset includes a small subset of the AFRL Gotcha data provided by AFRL/SNA.  The full data set can be downloaded separately from https://www.sdms.afrl.af.mil/index.php?collection=gotcha after user registration.  Also included is a single dataset from Sandia National Labs.
 
