@@ -76,7 +76,6 @@ if __name__ == '__main__':
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
-    plt.tight_layout()
     
     plt.subplot(2,2,4)
     plt.title('Fast Factorized Backprojection \n w/ multi-processing \n \
@@ -129,7 +128,6 @@ if __name__ == '__main__':
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-30,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
-    plt.tight_layout()
     
     plt.subplot(2,2,4)
     plt.title('Fast Factorized Backprojection \n w/ multi-processing \n \
@@ -182,7 +180,6 @@ if __name__ == '__main__':
     Runtime = %i s'%fbp_time)
     imgTools.imshow(img_FFBP, dB_scale = [-25,0], extent = extent)
     plt.xlabel('meters'); plt.ylabel('meters')
-    plt.tight_layout()
     
     plt.subplot(2,2,4)
     plt.title('Fast Factorized Backprojection \n w/ multi-processing \n \
