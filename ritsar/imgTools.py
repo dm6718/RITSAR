@@ -331,7 +331,7 @@ def backprojection(phs, platform, img_plane, taylor = 20, upsample = 6, prnt = T
     
     r0 = np.array([pos[npulses/2]]).T
     dr_i = norm(r0)-norm(r-r0, axis = 0)
-    img = img*np.exp(-1j*k_c*dr_i)   
+    img = img*np.exp(1j*k_c*dr_i)   
     img = np.reshape(img, [nv, nu])[::-1,:]
     return(img)
 
