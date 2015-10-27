@@ -5,8 +5,8 @@ from numpy.linalg import norm
 import matplotlib.pylab as plt
 from scipy.stats import linregress
 from matplotlib import cm
-import signal as sig
-import phsTools
+from . import signal as sig
+from . import phsTools
 from scipy.interpolate import interp1d
 import multiprocessing as mp
 

@@ -19,7 +19,7 @@ def AFRL(directory, pol, start_az, n_az=3):
     
     #Get filenames
     walker = os.walk(directory+'/'+pol)
-    w = walker.next()
+    w = walker.__next__()
     prefix = '/'+pol+'/'+w[2][0][0:19]
     az_str = []
     fnames = []
