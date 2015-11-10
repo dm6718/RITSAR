@@ -77,7 +77,7 @@ def AFRL(directory, pol, start_az, n_az=3):
         {
             'f_0'       :   f_0,
             'freq'      :   freq,
-            'chirprate' :   chirprate/2,
+            'chirprate' :   chirprate,
             'B_IF'      :   B_IF,
             'nsamples'  :   nsamples,
             'npulses'   :   npulses,
