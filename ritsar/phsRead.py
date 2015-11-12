@@ -337,7 +337,7 @@ def DIRSIG(directory):
     delta_t     = float(get(root, 'delta'))
     t           = np.linspace(-nsamples/2, nsamples/2, nsamples)*delta_t
     prf         = float(get(root, 'clockrate'))
-    chirprate   = float(get(root, 'chirprate'))/2
+    chirprate   = float(get(root, 'chirprate'))/pi
     T_p         = float(get(root, 'pulseduration'))
     B           = T_p*chirprate
     B_IF        = (t.max() - t.min())*chirprate
@@ -377,7 +377,7 @@ def DIRSIG(directory):
     for i in range(0,npulses,1):
         r_0 = norm(pos[i])
         tau_c = 2*r_0/c
-        ref = np.exp(-1j*(2*pi*f_0*(T-tau_c)+2*chirprate*(T-tau_c)**2))
+        ref = np.exp(-1j*(2*pi*f_0*(T-tau_c)+pi*chirprate*(T-tau_c)**2))
         signal[i,:] = ref*phs[i,:]
     
     platform = \
