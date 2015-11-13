@@ -297,7 +297,8 @@ def DIRSIG(directory):
     
     #get phase history
     phs_fname = getWildcard(directory, '*.hdr')
-    phs = envi.open(phs_fname).load(dtype = np.complex128)[:,:,0]
+    phs = envi.open(phs_fname).load(dtype = np.complex128)
+    phs = np.squeeze(phs)
     
     #get platform geometry
     ppd_fname = getWildcard(directory, '*.ppd')
