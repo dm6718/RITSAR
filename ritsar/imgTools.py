@@ -838,7 +838,7 @@ def FFBPmp(phs, platform, img_plane, N=3, derate = 1.05, taylor = 20, n = 32, be
     return(img_FFBP)
 
     
-def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect = 0, upsample = True):
+def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect = 1, upsample = True):
 ##############################################################################
 #                                                                            #
 #  This function defines the image plane parameters.  The user specifies the #
@@ -854,18 +854,10 @@ def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect =
 ##############################################################################
     
     nsamples = platform['nsamples']
-    npulses = platform['npulses']   
-    if not(aspect):
-        aspect = 1.0*nsamples/npulses
-    else:
-        npulses = nsamples/aspect
+    npulses = platform['npulses']
     
     #Import relevant platform parameters
     R_c = platform['R_c']    
-    
-    #Define resolution.  This should be less than the system resolution limits
-    du = res_factor*platform['delta_r']
-    dv = aspect*du
     
     #Define image plane parameters
     if upsample:
@@ -875,8 +867,13 @@ def img_plane_dict(platform, res_factor=1.0, n_hat = np.array([0,0,1]), aspect =
         nu= nsamples
         nv= npulses
         
-    u = np.linspace(-nsamples/2, nsamples/2, nu)*du
-    v = np.linspace(-npulses/2, npulses/2, nv)*dv
+    #Define resolution.  This should be less than the system resolution limits
+    du = platform['delta_r']*res_factor*nsamples/nu
+    dv = aspect*du
+    
+    #Define range and cross-range locations
+    u = np.arange(-nu/2, nu/2)*du
+    v = np.arange(-nv/2, nv/2)*dv
     
     #Derive image plane spatial frequencies
     k_u = 2*pi*np.linspace(-1.0/(2*du), 1.0/(2*du), nu)

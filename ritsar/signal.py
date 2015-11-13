@@ -132,7 +132,7 @@ def pad(f, size):
     else:
         y_off = 0
     
-    f_pad = np.pad(f, ((y_pad/2,y_pad/2+y_off),(x_pad/2, x_pad/2+x_off)),
+    f_pad = np.pad(f, ((y_pad//2,y_pad//2+y_off),(x_pad//2, x_pad//2+x_off)),
                    mode = 'constant')
     
     return(f_pad)
