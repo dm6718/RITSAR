@@ -6,6 +6,7 @@ from scipy.io import loadmat
 from scipy.stats import linregress
 from fnmatch import fnmatch
 import os
+import sys
 import xml.etree.ElementTree as ET
 
 def AFRL(directory, pol, start_az, n_az=3):
@@ -17,9 +18,15 @@ def AFRL(directory, pol, start_az, n_az=3):
 #                                                                            #
 ##############################################################################
     
+    #Check Python version
+    version = sys.version_info   
+    
     #Get filenames
     walker = os.walk(directory+'/'+pol)
-    w = walker.__next__()
+    if version.major < 3:
+        w = walker.next()
+    else:
+        w = walker.__next__()
     prefix = '/'+pol+'/'+w[2][0][0:19]
     az_str = []
     fnames = []
