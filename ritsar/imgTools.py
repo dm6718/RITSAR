@@ -261,7 +261,7 @@ def omega_k(phs, platform, taylor = 20, upsample = 6):
     length = 2**(int(np.log2(S_new.shape[0]*upsample))+1)
     pad_x = length-S_win.shape[1]
     pad_y = length-S_win.shape[0]
-    S_pad = np.pad(S_win,((pad_y/2, pad_y/2),(pad_x/2,pad_x/2)), mode = 'constant')
+    S_pad = np.pad(S_win,((pad_y//2, pad_y//2),(pad_x//2,pad_x//2)), mode = 'constant')
     
     img = sig.ift2(S_pad)
     
