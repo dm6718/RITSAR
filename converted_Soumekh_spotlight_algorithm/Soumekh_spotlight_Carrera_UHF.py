@@ -76,7 +76,7 @@ uc=duc*np.array([arange(-mc/2,mc/2)]).T;            # synthetic aperture array
 dkuc=pi2/(mc*duc);                # sample spacing in ku domain
 kuc=dkuc*np.array([arange(-mc/2,mc/2)]).T;          # kuc array
 #
-dku=.0*dkuc;                         # sample spacing in ku domain
+dku=1.0*dkuc;                         # sample spacing in ku domain
 
 ##########################################################
 ##    u domain parameters and arrays for SAR signal     ##
